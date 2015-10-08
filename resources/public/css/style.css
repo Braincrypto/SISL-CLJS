@@ -1,0 +1,52 @@
+/* some style */
+
+body {
+    background: black;
+    color: white;
+}
+
+div#board {
+    position: relative;
+    margin: auto;
+    padding: 0px;
+    background: tan;
+}
+
+div.cue {
+    position: absolute;
+}
+
+div.lane {
+    top: 0px;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+    background: cyan;
+}
+
+div.target {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    padding: 0px;
+    background: grey;
+    border-top: 1px solid black;
+}
+
+div.target.highlighted {
+    background: red;
+}
+
+span.prompt {
+    display: table-cell;
+    height: inherit;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 2em;
+}
+
+div.debug_controls {
+    margin: auto;
+    text-align: center;
+}
