@@ -5,12 +5,72 @@ body {
     color: white;
 }
 
-div#board {
+.appcontents {
     position: relative;
     margin: auto;
     padding: 0px;
-    background: tan;
 }
+
+div.board {
+    background: tan;
+    width: inherit;
+    height: inherit;
+}
+
+.dialog, .finished {
+    background: rgb(50,50,50);
+    height: inherit;
+    padding: 1em;
+}
+
+.completion_code {
+    display: block;
+    margin: auto;
+    background: rgb(80,0,0);
+    border: 1px solid black;
+    font-size: 1.7em;
+    text-align: center;
+}
+
+.log_warning {
+    position: absolute;
+    top: 30%;
+    left: 5%;
+    width: 90%;
+    background: rgba(150,0,0, 0.6);
+    border: 1px solid black;
+}
+
+.log_warning p {
+    margin: 0;
+    padding: 0.5em;
+}
+
+img.error {
+    display: block;
+    margin: 0 auto;
+    width: 3.5em;
+    height: 3.5em;
+}
+
+ul.score {
+    width: 90%;
+    margin: auto;
+    color: black;
+    list-style-type: none;
+    padding: 0px;
+    font-size: 1.1em;
+}
+
+ul.score > li {
+    position: absolute;
+    bottom: 0;
+    width: inherit;
+}
+
+ul.score > li.hits { text-align: left; }
+ul.score > li.misses { text-align: center; }
+ul.score > li.streak { text-align: right; }
 
 div.cue {
     position: absolute;

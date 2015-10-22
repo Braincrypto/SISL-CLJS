@@ -2,7 +2,7 @@
   (:require
    [reagent.core :as r]
    [webdasher.log :as log]
-   [webdasher.settings :as settings]))
+   [webdasher.settings :refer [scenario]]))
 
 (defonce selection (r/atom nil))
 
@@ -30,13 +30,12 @@
 
 (defn render-dialog [state]
   (let [{:keys [title type text button options :as dialog]}
-        (get-in @settings/scenario [:dialog (:dialog @state)])
+        (get-in @scenario [:dialog (:dialog @state)])
 
         rating (= type "rating")]
     [:div.dialog
      [:h1 title]
      [:div.dialog_text text]
-     [:p "Selection: " @selection]
      (if rating
          [render-ratings options selection])
      [:input {:type "button"

@@ -1,77 +1,31 @@
 (ns webdasher.render
   (:require
-   [webdasher.cue :as cue]
+   [webdasher.board :as board]
    [webdasher.log :as log]
    [webdasher.dialog :as dialog]
    [webdasher.settings :refer [scenario fresh-trial]]))
 
-(def lane-colors
-  [
-   {:hue 0   :saturation 1.0 :value 1.0 } ;red
-   {:hue 120 :saturation 1.0 :value 1.0 } ;green
-   {:hue 240 :saturation 1.0 :value 1.0 } ;blue
-   {:hue 60  :saturation 1.0 :value 1.0 } ;yellow
-   {:hue 180 :saturation 1.0 :value 1.0 } ;cyan
-   {:hue 300 :saturation 1.0 :value 1.0 } ;magenta
-   ])
+(defn render-finished-success [state]
+  [:div.finished
+   [:h1 "Congratulations!"]
+   [:p "You're finished. Thanks for playing!"]
+   [:p "Your completion code is"]
+   [:div.completion_code
+    (get-in @state [:log-result :code])]])
 
-(defn to-hsl [color]
-  (let [{h :hue sat :saturation val :value} color
-        l (* (- 2 sat) (/ val 2))
-        s (cond
-            (= l 1) 0
-            (< l 0.5) (/ (* sat val) (* l 2))
-            true (/ (* sat val) (- 2 (* l 2))))]
-    (str "hsl(" h "," (* 100 s) "%," (* 100 l) "%)")))
+(defn render-finished-failure [state]
+  [:div.finished
+   [:h1 "Oops!"]
+   [:p "Something went wrong during play,
+and your data was not transmitted to our server.
+Unfortunately, this means we cannot supply a
+completion code. Please check your internet
+connection and try again later."]])
 
-(def lane-colors-hsl
-  (map to-hsl lane-colors))
-
-(defn cue-color [cue]
-  (cond (:missed cue) "grey"
-        true (nth lane-colors-hsl (:value cue))))
-
-(defn render-target [state lane]
-  (let [key (nth (@scenario :lane-keys) lane)
-        highlighted ((@state :keys-down) key)
-        class (if highlighted "highlighted" "")]
-    [:div.target {:style {:height (@scenario :target-height)} :class class}
-     [:span.prompt {:style {:width (@scenario :lane-width)}} key]]))
-
-
-(defn render-cue [cue]
-  [:div.cue {:style {:top (:top cue)
-                     :left (@scenario :cue-left)
-                     :width (@scenario :cue-width)
-                     :height (@scenario :cue-width)
-                     :background (cue-color cue)}}])
-
-(defn lane-cues [state lane]
-  (filter #(= lane (:value %)) (:cues @state)))
-
-(defn lane-pos [lane]
-  (* lane (+ (@scenario :lane-gap) (@scenario :lane-width))))
-
-(defn render-lane [state lane]
-  [:div.lane {:style {:width (@scenario :lane-width)
-                      :height (@scenario :lane-height)
-                      :left (lane-pos lane)}}
-   [render-target state lane]
-   (for [{row-id :cue-row-id :as cue} (lane-cues state lane)]
-     ^{:key row-id}
-     [render-cue cue])])
-
-(defn render-lanes [state]
-  [:div.lanes
-   (for [lane (range (@scenario :lane-count))]
-     ^{:key lane}
-     [render-lane state lane])])
-
-(defn render-board [state]
-  [:div#board {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
-   [render-lanes state]])
-
-(def interesting-keys [:status :score :speed])
+(defn render-finished [state]
+  (if (get-in @state [:log-result :success])
+    [render-finished-success state]
+    [render-finished-failure state]))
 
 (defn render-debug-controls [state]
   [:div.debug_controls
@@ -82,18 +36,55 @@
        [:input {:type "button"
                 :value "Reset"
                 :on-click #(webdasher.core/reset-game)}])
+   (when (= (:status @state) :paused)
+     [:input {:type "button"
+              :value "Resume"
+              :on-click #(webdasher.core/start-animation :running)}])
+   (when (= (:status @state) :running)
+     [:input {:type "button"
+              :value "Pause"
+              :on-click #(webdasher.core/pause-game)}])
    [:input {:type "button"
             :value "Reload Settings"
             :on-click #(webdasher.settings/load-config)}]])
 
+(def interesting-keys [:status :log-result])
+
+(defn should-show-log-warning [state]
+  (let [{{success :success :as log-result} :log-result status :status} @state]
+    (and (not= status :finished)
+         log-result
+         (not success))))
+
+(defn render-log-warning [state]
+  (if (should-show-log-warning state)
+    [:div.log_warning
+     [:p
+      [:img.error {:src "error.png"}]
+      "Oh no! Something has gone wrong with your connection to our logging server. You will not receive credit for this task."]]))
+
+(defn render-debug-info [state]
+  [:div.debug_info
+   [:div.state (str (select-keys @state interesting-keys))]])
+
+(defn render-debug [state]
+  [:div.debug
+   [render-debug-controls state]
+   #_[render-debug-info state]])
+
 (defn render-page [state]
   (if (and @scenario @fresh-trial)
     [:div.appcontents
-     (if (= (:status @state) :dialog)
+     {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
+     (case (:status @state)
+       :dialog
        [dialog/render-dialog state]
-       [render-board state])
-     [render-debug-controls state]
-     [:div.state (str (select-keys @state interesting-keys))]
-     #_[:div.log (str "Log queue size: " (count @log/event-queue))]]
+
+       :finished
+       [render-finished state]
+
+       [board/render-board state])
+     [render-log-warning state]
+     [render-debug state]]
     [:div.appcontents "Loading..."]))
 

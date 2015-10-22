@@ -1,13 +1,16 @@
 (ns ^:figwheel-always webdasher.core
-    (:require
-     [reagent.core :as reagent :refer [atom]]
-     [webdasher.render :as render]
-     [webdasher.settings :as settings]
-     [webdasher.input :as input]
-     [webdasher.cue :as cue]
-     [webdasher.dialog :as dialog]
-     [webdasher.score :as score]
-     [webdasher.log :as log]))
+  (:require
+   [reagent.core :as reagent :refer [atom]]
+   [cljs.core.async :refer [<!]]
+   [webdasher.render :as render]
+   [webdasher.settings :as settings]
+   [webdasher.input :as input]
+   [webdasher.cue :as cue]
+   [webdasher.dialog :as dialog]
+   [webdasher.score :as score]
+   [webdasher.log :as log])
+  (:require-macros
+   [cljs.core.async.macros :refer [go]]))
 
 (enable-console-print!)
 
@@ -101,8 +104,15 @@
     (.cancelAnimationFrame js/window @animation-frame-request)
     (reset! animation-frame-request nil)))
 
+(defn pause-game []
+  (cancel-animation)
+  (swap! app-state
+         #(assoc % :status :paused)))
+
 (defn new-game []
-  (log/start-logging)
+  (go
+    (let [log-result (<! (log/start-logging))]
+      (swap! app-state #(assoc % :log-result log-result))))
   (reset! app-state (fresh-state))
   (start-animation :running))
 

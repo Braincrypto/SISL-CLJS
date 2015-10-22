@@ -2,30 +2,34 @@
   (:require
    [compojure.core :refer [defroutes GET POST]]
    [ring.util.response :refer [response status]]
-   [ring.middleware.json :refer [wrap-json-response wrap-json-body]]))
+   [ring.middleware.json :refer [wrap-json-response wrap-json-params]]
+   [ring.middleware.keyword-params :refer [wrap-keyword-params]]))
 
 (defonce current-session-id (atom 10000))
-(defonce sessions (atom {}))
 
-(defn new-session [{params :body}]
-  (let [new-session-id (swap! current-session-id inc)
-        session (assoc params
-                       :session-id new-session-id
-                       :log-data [])]
-    (swap! sessions #(assoc % new-session-id session))
-    (response session)))
+(defn new-session [{:keys [params] :as request}]
+  (let [new-session-id (swap! current-session-id inc)]
+    (println (str "Started new session with id " new-session-id))
+    (response {:success true
+               :session-id new-session-id})))
 
-(defn upload-data-chunk [{{session-id :session} :params}]
-  (let [session (@sessions session-id)
-        finished (:finished session)]
-    (if (or (not session) finished)
-      (status 403 (response "Session finished or not found."))
-      )))
+(defn upload-data-chunk [{{:keys [session data] :as params} :params :as request}]
+  (println (str "Data uploaded: " (count data) " items for session " session "."))
+  (response {:success true}))
 
-(defn finish-session [{{session-id :session} :params}]
-  (response {}))
+(defn finish-session [{{:keys [session] :as params} :params :as request}]
+  (println (str "Session " session " finished."))
+  (response {:success true
+             :code (str session "-FINISH-CODE")}))
+
+
+(defn wrap-handler [handler]
+  (-> handler
+      wrap-keyword-params
+      wrap-json-params
+      wrap-json-response))
 
 (defroutes logging-routes
-  (GET "/new-session" [] (wrap-json-response (wrap-json-body new-session)))
-  (POST "/upload-data" [] (wrap-json-response (wrap-json-body upload-data-chunk)))
-  (POST "/finish-session" [] (wrap-json-response (wrap-json-body finish-session))))
+  (POST "/new-session.php" [] (wrap-handler new-session))
+  (POST "/upload-data.php" [] (wrap-handler upload-data-chunk))
+  (POST "/finish-session.php" [] (wrap-handler finish-session)))

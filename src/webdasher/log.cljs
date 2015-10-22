@@ -1,10 +1,14 @@
 (ns webdasher.log
   (:require
+   [ajax.core :refer [GET POST]]
    [cljs.core.async :refer [chan <! >! put! close!]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defn console [message]
   (.log js/console message))
+
+(defn alert [message]
+  (js/alert message))
 
 (defn log-state [state message]
   (console (str message " " state))
@@ -22,6 +26,7 @@
 
 (def event-log-template
   {
+   :type :event
    :date_time nil
    :time_stamp_ms nil
    :event_type nil
@@ -30,6 +35,7 @@
 
 (def input-log-template
   {
+   :type :input
    :date_time nil
    :time_stamp_ms nil
    :event_type nil
@@ -37,7 +43,10 @@
    :key_state nil
    })
 
-(defonce event-queue (atom #queue []))
+(def new-session-url "new-session.php")
+(def log-upload-url "upload-data.php")
+(def finish-session-url "finish-session.php")
+
 (defonce event-channel (atom (chan)))
 (def when-to-send 100)
 
@@ -72,7 +81,6 @@
              :key_state key-state)))
 
 (defn record-event [event]
-  ;; (console (str "Event: " event))
   (put! @event-channel event))
 
 (defn record-cue [event cue]
@@ -84,22 +92,80 @@
 (defn record-key [event key-state]
   (record-event (key-response event key-state)))
 
-(defn send-to-server [queue]
-  (console (str "Sending " (count queue) " events to server.")))
 
-(defn start-logging []
-  (reset! event-channel (chan))
+(defn wrap-params [params channel reason]
+  (assoc
+   {:handler #(put! channel %)
+    :error-handler
+    #(put! channel {:success false
+                    :reason reason
+                    :server-response %})
+    :format :json
+    :response-format :json
+    :keywords? true}
+   :params params))
+
+(defn try-request
+  [url
+   {:keys [params max-tries reason]
+    :or {params {}
+         max-tries 10
+         reason "Request failed." }}]
+  (let [server-channel (chan)
+        request-params (wrap-params params server-channel reason)]
+    (go-loop [tries 1]
+      (POST url request-params)
+      (let [{:keys [success] :as response} (<! server-channel)]
+        (if (or success (= tries max-tries))
+          response
+          (recur (inc tries)))))))
+
+(defn new-session []
+  (try-request
+   new-session-url
+   {:params {:browser-info (.-userAgent js/navigator)
+             :machine-info ""}
+    :reason "Could not start new session."}))
+
+(defn send-to-server [session-id queue]
+  (try-request
+   log-upload-url
+   {:params {:session session-id
+             :data queue}
+    :reason "Could not upload log chunk."}))
+
+(defn finish-session [session-id]
+  (try-request
+   finish-session-url
+   {:params {:session session-id}
+    :reason "Could not finish log session."}))
+
+(defn logging-loop [session-id channel]
   (go-loop [queue #queue []]
-    (reset! event-queue queue)
-    (if-let [event (<! @event-channel)]
+    (if-let [event (<! channel)]
       (let [bigger-queue (conj queue event)
             queue-size (count bigger-queue)]
         (if (>= queue-size when-to-send)
-          (do
-            (send-to-server bigger-queue)
-            (recur #queue []))
+          (let [{:keys [success] :as server-response}
+                (<! (send-to-server session-id bigger-queue))]
+            (if success
+              (recur #queue [])
+              server-response))
           (recur bigger-queue)))
-      (send-to-server queue))))
+      (let [{:keys [success] :as server-response}
+            (<! (send-to-server session-id queue))]
+        (if success
+          (<! (finish-session session-id))
+          server-response)))))
+
+(defn start-logging []
+  (reset! event-channel (chan))
+  (go
+    (let [{:keys [session-id] :as response}
+          (<! (new-session))]
+      (if session-id
+        (<! (logging-loop session-id @event-channel))
+        response))))
 
 (defn stop-logging []
   (close! @event-channel))
