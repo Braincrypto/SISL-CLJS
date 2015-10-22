@@ -68,9 +68,10 @@ connection and try again later."]])
    [:div.state (str (select-keys @state interesting-keys))]])
 
 (defn render-debug [state]
-  [:div.debug
-   [render-debug-controls state]
-   #_[render-debug-info state]])
+  (if (@scenario :debug)
+    [:div.debug
+     [render-debug-controls state]
+     [render-debug-info state]]))
 
 (defn render-page [state]
   (if (and @scenario @fresh-trial)

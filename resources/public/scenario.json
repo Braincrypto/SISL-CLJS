@@ -1,4 +1,5 @@
 {
+    "debug": true,
     "board-height": 600,
     "board-width": 300,
     "lane-width": 60,
