@@ -29,6 +29,7 @@
    :type :event
    :date_time nil
    :time_stamp_ms nil
+   :trial_row_id nil
    :event_type nil
    :event_value nil
    })
@@ -59,25 +60,28 @@
   (-> event-log-template
       timestamp
       (assoc :event_type event
-             :event_value cue)))
+             :event_value cue
+             :trial_row_id (:cue-row-id cue))))
 
 (defn speed-event [new-speed]
   (-> event-log-template
       timestamp
       (assoc :event_type :speed_change
-             :event_value new-speed)))
+             :event_value new-speed
+             :trial_row_id -1)))
 
-(defn dialog-response [response]
+(defn dialog-response [row-id response]
   (-> event-log-template
       timestamp
       (assoc :event_type :dialog_response
-             :event_value response)))
+             :event_value response
+             :trial_row_id row-id)))
 
 (defn key-response [event key-state]
-  (-> event-log-template
+  (-> input-log-template
       timestamp
       (assoc :event_type (:state event)
-             :event_value event
+             :event_value (:lane event)
              :key_state key-state)))
 
 (defn record-event [event]
@@ -86,8 +90,8 @@
 (defn record-cue [event cue]
   (record-event (cue-event event cue)))
 
-(defn record-dialog [response]
-  (record-event (dialog-response response)))
+(defn record-dialog [row-id response]
+  (record-event (dialog-response row-id response)))
 
 (defn record-key [event key-state]
   (record-event (key-response event key-state)))
@@ -123,8 +127,12 @@
 (defn new-session []
   (try-request
    new-session-url
-   {:params {:browser-info (.-userAgent js/navigator)
-             :machine-info ""}
+   {:params {:session
+             {:browser_info (.-userAgent js/navigator)
+              :machine_info ""
+              :turk_user_id ""
+              :turk_hit_id ""
+              :turk_assignment_id ""}}
     :reason "Could not start new session."}))
 
 (defn send-to-server [session-id queue]

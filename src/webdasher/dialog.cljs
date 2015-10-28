@@ -10,10 +10,11 @@
   (reset! selection nil)
   (assoc state
          :status :dialog
-         :dialog (keyword (event :value))))
+         :dialog (keyword (event :value))
+         :dialog-row (:cue-row-id event)))
 
-(defn complete-dialog [dialog]
-  (log/record-event (log/dialog-response (or @selection -1)))
+(defn complete-dialog [row dialog]
+  (log/record-event (log/dialog-response row (or @selection -1)))
   (webdasher.core/start-animation :running))
 
 (defn render-ratings [options]
@@ -41,4 +42,4 @@
      [:input {:type "button"
               :disabled (and rating (not @selection))
               :value button
-              :on-click #(complete-dialog dialog)}]]))
+              :on-click #(complete-dialog (:dialog-row @state) dialog)}]]))
