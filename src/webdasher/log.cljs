@@ -88,7 +88,10 @@
   (put! @event-channel event))
 
 (defn record-cue [event cue]
-  (record-event (cue-event event cue)))
+  (record-event
+   (cue-event event
+              (update cue
+                      :velocity * (@webdasher.core/app-state :speed)))))
 
 (defn record-dialog [row-id response]
   (record-event (dialog-response row-id response)))
@@ -114,11 +117,10 @@
    {:keys [params max-tries reason]
     :or {params {}
          max-tries 10
-         reason "Request failed." }}]
-  (let [server-channel (chan)
-        request-params (wrap-params params server-channel reason)]
+         reason "Request failed."}}]
+  (let [server-channel (chan)]
     (go-loop [tries 1]
-      (POST url request-params)
+      (POST url (wrap-params params server-channel reason))
       (let [{:keys [success] :as response} (<! server-channel)]
         (if (or success (= tries max-tries))
           response

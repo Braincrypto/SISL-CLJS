@@ -9,8 +9,8 @@
          old-streak :streak
          :as old-score} (:score state)
         hit-count (count hits)
-        miss-count (count misses)]
-    (assoc state :score 
+        miss-count (count (filter (complement :missed) misses))]
+    (assoc state :score
            (cond (> hit-count 0)
                  {:hits (+ old-hits hit-count)
                   :misses old-misses

@@ -19,9 +19,10 @@
 
 (defn hit? [event cue]
   (if (and (= (:value cue) (:lane event))
+           (cue/in-target? cue)
            (not (:missed cue)))
-    (if (cue/in-target? cue) :hit :miss)
-    :irrelevant))
+    :hit
+    :miss))
 
 (defn record-response [state event]
   (log/record-key event (:keys-down state))
@@ -37,20 +38,19 @@
 
 (defn hit-cues [state event]
   (if (and (= (:state event) :down) (= (:status state) :running))
-    (let [{hit-cues :hit misses :miss rest-cues :irrelevant}
+    (let [{hit-cues :hit misses :miss}
           (group-by (partial hit? event) (:cues state))
 
           [first-missed & rest-missed] (sort-by :top > misses)
 
-          missed-cues (if (and (empty? hit-cues) first-missed)
-                        (conj rest-missed (assoc first-missed :missed true))
-                        misses)
-
-          remaining-cues (into rest-cues missed-cues)]
+          remaining (if (and first-missed
+                             (empty? hit-cues))
+                      (conj rest-missed (assoc first-missed :missed true))
+                      misses)]
       (-> state
-          (score/update-score hit-cues missed-cues)
+          (score/update-score hit-cues [first-missed])
           (record-hits event hit-cues first-missed)
-          (assoc :cues remaining-cues
+          (assoc :cues remaining
                  :scored-cues (concat (:scored-cues state) hit-cues))))
     state))
 
