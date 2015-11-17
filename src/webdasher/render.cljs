@@ -48,7 +48,7 @@ connection and try again later."]])
             :value "Reload Settings"
             :on-click #(webdasher.settings/load-config)}]])
 
-(def interesting-keys [:status :log-result])
+(def interesting-keys [:status :speed])
 
 (defn should-show-log-warning [state]
   (let [{{success :success :as log-result} :log-result status :status} @state]

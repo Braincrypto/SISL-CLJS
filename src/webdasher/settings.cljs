@@ -34,7 +34,6 @@
   (GET filename {:handler parse-trial-file
                  :error-handler #(log/console "Failed to parse trial file.")}))
 
-
 ;; Scenario parsing
 (defn calculate-parameters [scenario]
   (let [{:keys [board-height

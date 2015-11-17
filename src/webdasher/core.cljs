@@ -15,15 +15,20 @@
 (enable-console-print!)
 
 (def starting-app-state
-  {:trial []
+  {:trial '()
    :cues []
-   :scored-cues '()
-   :keys-down #{}
-   :score {:hits 0 :misses 0 :streak 0}
-   :accumulator 0.0
-   :speed 1.0
+
    :status :stopped
-   :current-time nil})
+   :current-time nil
+   :accumulator 0.0
+   :keys-down #{}
+
+   :score {:hits 0 :misses 0 :streak 0}
+   :score-updating true
+
+   :scored-cues '()
+   :speed 1.0
+   :speed-updating true})
 
 (defn fresh-state []
   (assoc starting-app-state
@@ -34,10 +39,13 @@
 (defonce animation-frame-request (atom nil))
 
 (defn process-event [state event]
-  (case (:type event)
-    "cue" (cue/process-cue state event)
-    "dialog" (dialog/process-dialog state event)
-    state))
+  ((case (:type event)
+     "cue" cue/process-cue
+     "dialog" dialog/process-dialog
+     "speed" score/process-speed-event
+     "score" score/process-score-event
+     (fn [state event] state))
+   state event))
 
 (defn process-trial-events [state]
   (let [{:keys [accumulator trial]} state

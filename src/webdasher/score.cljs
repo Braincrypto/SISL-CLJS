@@ -3,25 +3,30 @@
    [webdasher.log :as log]
    [webdasher.settings :as settings]))
 
-(defn update-score [state hits misses]
-  (let [{old-hits :hits
-         old-misses :misses
-         old-streak :streak
-         :as old-score} (:score state)
-        hit-count (count hits)
-        miss-count (count (filter (complement :missed) misses))]
+(defn update-score
+  [{{:keys [hits misses streak] :as score} :score
+    score-updating :score-updating :as state}
+   hit
+   miss]
+  (let [hit-count (count hit)
+        miss-count (count (filter (complement :missed) miss))]
     (assoc state :score
-           (cond (> hit-count 0)
-                 {:hits (+ old-hits hit-count)
-                  :misses old-misses
-                  :streak (+ old-streak hit-count)}
+           (cond
+             (not score-updating)
+             score
 
-                 (> miss-count 0)
-                 {:hits old-hits
-                  :misses (+ old-misses miss-count)
-                  :streak 0}
+             (> hit-count 0)
+             {:hits (+ hits hit-count)
+              :misses misses
+              :streak (+ streak hit-count)}
 
-                 true old-score))))
+             (> miss-count 0)
+             {:hits hits
+              :misses (+ misses miss-count)
+              :streak 0}
+
+             true
+             score))))
 
 (defn record-speed [new-speed]
   (log/record-event (log/speed-event new-speed))
@@ -43,11 +48,43 @@
       true
       current-speed)))
 
-(defn update-speed [state]
-  (let [{:keys [speed scored-cues]} state
-        {:keys [lookback] :as params} (:speed @settings/scenario)]
-    (if (>= (count scored-cues) lookback)
+(defn update-speed [{:keys [speed speed-updating scored-cues] :as state}]
+  (let [{:keys [lookback] :as params} (:speed @settings/scenario)]
+    (if (and speed-updating
+             (>= (count scored-cues) lookback))
       (assoc state
              :speed (calculate-speed speed (take lookback scored-cues) params)
              :scored-cues (drop lookback scored-cues))
       state)))
+
+(defn process-speed-event
+  [{:keys [speed speed-updating] :as state}
+   {:keys [value time-to-targ-ms] :as event}]
+
+  (let [new-speed
+        (case value
+          -1 (get-in @settings/scenario [:speed :default])
+          2 (/ time-to-targ-ms 1000)
+          speed)
+
+        updating
+        (case value
+          0 false
+          1 true
+          speed-updating)]
+
+    (if-not (= speed new-speed)
+      (record-speed new-speed))
+
+    (assoc state
+           :speed new-speed
+           :speed-updating updating
+           :scored-cues '())))
+
+(defn process-score-event [state
+                           {:keys [value] :as event}]
+  (case value
+    -1 (assoc state :score {:hits 0 :misses 0 :streak 0} :scored-cues '())
+    0 (assoc state :score-updating false :scored-cues '())
+    1 (assoc state :score-updating true :scored-cues '())
+    state))

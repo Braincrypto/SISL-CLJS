@@ -4,11 +4,11 @@
    [cljs.core.async :refer [chan <! >! put! close!]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
-(defn console [message]
-  (.log js/console message))
+(defn console [& message]
+  (.log js/console (apply str message)))
 
-(defn alert [message]
-  (js/alert message))
+(defn alert [& message]
+  (js/alert (apply str message)))
 
 (defn log-state [state message]
   (console (str message " " state))
