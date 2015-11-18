@@ -27,7 +27,7 @@
                 :name "rating"
                 :value i
                 :on-click #(reset! selection i)}]
-       option]])])
+       [:span.response option]]])])
 
 (defn render-dialog [state]
   (let [{:keys [title type text button options :as dialog]}
@@ -35,11 +35,12 @@
 
         rating (= type "rating")]
     [:div.dialog
+     {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
      [:h1 title]
-     [:div.dialog_text text]
+     [:p text]
      (if rating
          [render-ratings options selection])
-     [:input {:type "button"
-              :disabled (and rating (not @selection))
-              :value button
-              :on-click #(complete-dialog (:dialog-row @state) dialog)}]]))
+     [:p [:input {:type "button"
+                  :disabled (and rating (not @selection))
+                  :value button
+                  :on-click #(complete-dialog (:dialog-row @state) dialog)}]]]))

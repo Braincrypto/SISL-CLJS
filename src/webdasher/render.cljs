@@ -6,7 +6,8 @@
    [webdasher.settings :refer [scenario fresh-trial]]))
 
 (defn render-finished-success [state]
-  [:div.finished
+  [:div.dialog
+   {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
    [:h1 "Congratulations!"]
    [:p "You're finished. Thanks for playing!"]
    [:p "Your completion code is"]
@@ -14,7 +15,8 @@
     (get-in @state [:log-result :code])]])
 
 (defn render-finished-failure [state]
-  [:div.finished
+  [:div.dialog
+   {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
    [:h1 "Oops!"]
    [:p "Something went wrong during play,
 and your data was not transmitted to our server.
@@ -76,7 +78,6 @@ connection and try again later."]])
 (defn render-page [state]
   (if (and @scenario @fresh-trial)
     [:div.appcontents
-     {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
      (case (:status @state)
        :dialog
        [dialog/render-dialog state]

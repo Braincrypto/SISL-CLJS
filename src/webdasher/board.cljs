@@ -73,7 +73,8 @@
      [:li.streak "Streak: " streak]]))
 
 (defn render-board [state]
-  [:div.board 
+  [:div.board
+   {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
    [render-lanes state]
    [render-score state]])
 
