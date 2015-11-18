@@ -129,7 +129,13 @@
   (log/stop-logging)
   (reset! app-state (fresh-state)))
 
-(reagent/render-component [render/render-page app-state]
+(def debug-methods
+  {:start-animation start-animation
+   :new-game new-game
+   :reset-game reset-game
+   :pause-game pause-game})
+
+(reagent/render-component [render/render-page app-state debug-methods]
                           (. js/document (getElementById "app")))
 
 

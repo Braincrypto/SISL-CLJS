@@ -29,23 +29,23 @@ connection and try again later."]])
     [render-finished-success state]
     [render-finished-failure state]))
 
-(defn render-debug-controls [state]
+(defn render-debug-controls [state controls]
   [:div.debug_controls
    (if (= (:status @state) :stopped)
        [:input {:type "button"
                 :value "Start"
-                :on-click #(webdasher.core/new-game)}]
+                :on-click #((controls :new-game))}]
        [:input {:type "button"
                 :value "Reset"
-                :on-click #(webdasher.core/reset-game)}])
+                :on-click #((controls :reset-game))}])
    (when (= (:status @state) :paused)
      [:input {:type "button"
               :value "Resume"
-              :on-click #(webdasher.core/start-animation :running)}])
+              :on-click #((controls :start-animation) :running)}])
    (when (= (:status @state) :running)
      [:input {:type "button"
               :value "Pause"
-              :on-click #(webdasher.core/pause-game)}])
+              :on-click #((controls :pause-game))}])
    [:input {:type "button"
             :value "Reload Settings"
             :on-click #(webdasher.settings/load-config)}]])
@@ -69,24 +69,24 @@ connection and try again later."]])
   [:div.debug_info
    [:div.state (str (select-keys @state interesting-keys))]])
 
-(defn render-debug [state]
+(defn render-debug [state controls]
   (if (@scenario :debug)
     [:div.debug
-     [render-debug-controls state]
+     [render-debug-controls state controls]
      [render-debug-info state]]))
 
-(defn render-page [state]
+(defn render-page [state controls]
   (if (and @scenario @fresh-trial)
     [:div.appcontents
      (case (:status @state)
        :dialog
-       [dialog/render-dialog state]
+       [dialog/render-dialog state controls]
 
        :finished
        [render-finished state]
 
        [board/render-board state])
      [render-log-warning state]
-     [render-debug state]]
+     [render-debug state controls]]
     [:div.appcontents "Loading..."]))
 

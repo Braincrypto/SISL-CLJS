@@ -35,31 +35,30 @@
    :cue_middle_zone :middle-of-zone
    :cue_exit_zone :bottom-of-zone})
 
-(defn record-border-crossings [cues]
+(defn record-border-crossings [state cues]
   (doseq [cue cues
           [event-name border] borders]
     (if (crossed-border? cue (@scenario border))
-        (log/record-cue event-name cue))))
+        (log/record-cue event-name cue (:speed state)))))
 
 (defn remove-missed-cues [state]
-  (let [{:keys [cues scored-cues]} state
+  (let [{:keys [cues scored-cues speed]} state
         {missed-cues true remaining-cues false} (group-by missed? cues)
         missed (map #(assoc % :missed true) missed-cues)]
     (doseq [cue missed]
-      (log/record-cue :cue_disappear cue))
+      (log/record-cue :cue_disappear cue speed))
     (-> state
         (assoc :cues remaining-cues
                :scored-cues (concat scored-cues missed))
         (score/update-score [] missed-cues))))
 
-(defn update-cues [state]
-  (let [{dt :delta-time cues :cues} state
-        updated-cues (map (partial fall dt) cues)]
-    (record-border-crossings updated-cues)
+(defn update-cues [{:keys [delta-time cues speed] :as state}]
+  (let [updated-cues (map (partial fall delta-time) cues)]
+    (record-border-crossings state updated-cues)
     (assoc state :cues updated-cues)))
 
 (defn process-cue [state event]
   (let [cue (spawn event (:accumulator state))]
-    (log/record-cue :cue_appear cue)
+    (log/record-cue :cue_appear cue (:speed state))
     (assoc state
            :cues (conj (:cues state) cue))))

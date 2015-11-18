@@ -28,12 +28,12 @@
   (log/record-key event (:keys-down state))
   state)
 
-(defn record-hits [state event hit-cues missed-cue]
+(defn record-hits [{:keys [speed] :as state} event hit-cues missed-cue]
   (doseq [hit hit-cues]
-    (log/record-cue :key_correct hit)
-    (log/record-cue :cue_disappear hit))
+    (log/record-cue :key_correct hit speed)
+    (log/record-cue :cue_disappear hit speed))
   (if missed-cue
-      (log/record-cue :key_incorrect missed-cue))
+      (log/record-cue :key_incorrect missed-cue speed))
   state)
 
 (defn hit-cues [state event]

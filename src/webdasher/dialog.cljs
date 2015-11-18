@@ -13,9 +13,9 @@
          :dialog (keyword (event :value))
          :dialog-row (:cue-row-id event)))
 
-(defn complete-dialog [row dialog]
+(defn complete-dialog [controls row dialog]
   (log/record-event (log/dialog-response row (or @selection -1)))
-  (webdasher.core/start-animation :running))
+  ((controls :start-animation) :running))
 
 (defn render-ratings [options]
   [:ul.ratings
@@ -29,7 +29,7 @@
                 :on-click #(reset! selection i)}]
        [:span.response option]]])])
 
-(defn render-dialog [state]
+(defn render-dialog [state controls]
   (let [{:keys [title type text button options :as dialog]}
         (get-in @scenario [:dialog (:dialog @state)])
 
@@ -43,4 +43,4 @@
      [:p [:input {:type "button"
                   :disabled (and rating (not @selection))
                   :value button
-                  :on-click #(complete-dialog (:dialog-row @state) dialog)}]]]))
+                  :on-click #(complete-dialog controls (:dialog-row @state) dialog)}]]]))

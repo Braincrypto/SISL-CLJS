@@ -87,11 +87,11 @@
 (defn record-event [event]
   (put! @event-channel event))
 
-(defn record-cue [event cue]
+(defn record-cue [event cue speed]
   (record-event
    (cue-event event
               (update cue
-                      :velocity * (@webdasher.core/app-state :speed)))))
+                      :velocity * speed))))
 
 (defn record-dialog [row-id response]
   (record-event (dialog-response row-id response)))

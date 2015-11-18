@@ -5,10 +5,10 @@
    [clojure.string :refer [split-lines split]]
    [webdasher.log :as log]))
 
+(defonce request-counter (atom 1))
 (defonce fresh-trial (atom nil))
 (defonce scenario (atom nil))
 
-;; Trial parsing 
 (defn try-int [val]
   (let [int-val (js/parseInt val)]
     (if (js/isNaN int-val)
@@ -81,8 +81,9 @@
                  :keywords? true}))
 
 (defn load-config []
-  (do
-    (load-trial-file "trial.csv")
-    (load-scenario "scenario.json")))
+  (let [counter (swap! request-counter inc)
+        param (str "?foo=" counter)]
+    (load-trial-file (str "trial.csv" param))
+    (load-scenario (str "scenario.json" param))))
 
 (defonce load-config-at-start (load-config))
