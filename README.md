@@ -5,7 +5,7 @@ A ClojureScript implementation of the SISL task for the web/MTurk.
 ## Dependencies
 
 - Java 1.8
-- Leiningen 2.0
+- [Leiningen 2.0](https://github.com/technomancy/leiningen)
 
 ## Setup
 
