@@ -14,7 +14,7 @@
   :plugins [[lein-cljsbuild "1.1.0"]
             [lein-figwheel "0.4.0"]]
 
-  :source-paths ["src"]
+  :source-paths ["src" "server"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
@@ -47,7 +47,7 @@
              ;; if you want to embed a ring handler into the figwheel http-kit
              ;; server, this is for simple ring servers, if this
              ;; doesn't work for you just run your own server :)
-             :ring-handler webdasher.server-side/logging-routes
+             :ring-handler webdasher.server/logging-routes
 
              ;; To be able to open files in your editor from the heads up display
              ;; you will need to put a script on your path.

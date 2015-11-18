@@ -1,4 +1,4 @@
-(ns webdasher.server-side
+(ns webdasher.server
   (:require
    [compojure.core :refer [defroutes GET POST]]
    [ring.util.response :refer [response status]]
