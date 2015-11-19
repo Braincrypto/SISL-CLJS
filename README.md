@@ -1,8 +1,8 @@
-# webdasher
+# SISL-CLJS
 
 A ClojureScript implementation of the SISL task for the web/MTurk.
 
-## Dependencies
+## Development Dependencies
 
 - Java 1.8
 - [Leiningen 2.0](https://github.com/technomancy/leiningen)
@@ -70,8 +70,7 @@ and returns
     { "success": true,
       "code": <finish-code> }
 
-Where <finish-code> is a unique code that the user can provide to Mechanical
-Turk to prove that they finished a session as requested.
+Where <finish-code> is a unique code that the user can provide to prove that they finished a session as requested.
 
 ## License
 

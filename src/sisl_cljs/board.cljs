@@ -1,7 +1,7 @@
-(ns webdasher.board
+(ns sisl-cljs.board
   (:require
-   [webdasher.cue :as cue]
-   [webdasher.settings :refer [scenario]]))
+   [sisl-cljs.cue :as cue]
+   [sisl-cljs.settings :refer [scenario]]))
 
 (def lane-colors
   [

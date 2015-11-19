@@ -1,8 +1,8 @@
-(ns webdasher.cue
+(ns sisl-cljs.cue
   (:require
-   [webdasher.settings :refer [scenario]]
-   [webdasher.score :as score]
-   [webdasher.log :as log]))
+   [sisl-cljs.settings :refer [scenario]]
+   [sisl-cljs.score :as score]
+   [sisl-cljs.log :as log]))
 
 (defn velocity [cue]
   (/ (@scenario :middle-of-zone)

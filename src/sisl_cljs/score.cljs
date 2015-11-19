@@ -1,7 +1,7 @@
-(ns webdasher.score
+(ns sisl-cljs.score
   (:require
-   [webdasher.log :as log]
-   [webdasher.settings :as settings]))
+   [sisl-cljs.log :as log]
+   [sisl-cljs.settings :as settings]))
 
 (defn update-score
   [{{:keys [hits misses streak] :as score} :score

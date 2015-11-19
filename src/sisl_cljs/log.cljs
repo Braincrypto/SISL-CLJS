@@ -1,4 +1,4 @@
-(ns webdasher.log
+(ns sisl-cljs.log
   (:require
    [ajax.core :refer [GET POST]]
    [cljs.core.async :refer [chan <! >! put! close!]])

@@ -1,4 +1,4 @@
-(ns webdasher.server
+(ns sisl-cljs.server
   (:require
    [compojure.core :refer [defroutes GET POST]]
    [ring.util.response :refer [response status]]

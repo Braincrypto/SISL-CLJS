@@ -1,9 +1,9 @@
-(ns webdasher.render
+(ns sisl-cljs.render
   (:require
-   [webdasher.board :as board]
-   [webdasher.log :as log]
-   [webdasher.dialog :as dialog]
-   [webdasher.settings :refer [scenario fresh-trial]]))
+   [sisl-cljs.board :as board]
+   [sisl-cljs.log :as log]
+   [sisl-cljs.dialog :as dialog]
+   [sisl-cljs.settings :refer [scenario fresh-trial]]))
 
 (defn render-finished-success [state]
   [:div.dialog
@@ -48,7 +48,7 @@ connection and try again later."]])
               :on-click #((controls :pause-game))}])
    [:input {:type "button"
             :value "Reload Settings"
-            :on-click #(webdasher.settings/load-config)}]])
+            :on-click #(sisl-cljs.settings/load-config)}]])
 
 (def interesting-keys [:status :speed])
 

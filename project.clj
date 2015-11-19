@@ -1,5 +1,5 @@
-(defproject webdasher "0.1.0-SNAPSHOT"
-  :description "A web version of the Son-of-Dasher research too."
+(defproject sisl-cljs "0.1.0-SNAPSHOT"
+  :description "A ClojureScript implementation of the SISL Hero research tool."
   :url "http://cortical.csl.sri.com/"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -22,17 +22,17 @@
     :builds [{:id "dev"
               :source-paths ["src"]
 
-              :figwheel { :on-jsload "webdasher.core/on-js-reload" }
+              :figwheel { :on-jsload "sisl-cljs.core/on-js-reload" }
 
-              :compiler {:main webdasher.core
+              :compiler {:main sisl-cljs.core
                          :asset-path "js/compiled/out"
-                         :output-to "resources/public/js/compiled/webdasher.js"
+                         :output-to "resources/public/js/compiled/sisl-cljs.js"
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true }}
              {:id "min"
               :source-paths ["src"]
-              :compiler {:output-to "resources/public/js/compiled/webdasher.js"
-                         :main webdasher.core
+              :compiler {:output-to "resources/public/js/compiled/sisl-cljs.js"
+                         :main sisl-cljs.core
                          :optimizations :advanced
                          :pretty-print false}}]}
 
@@ -47,7 +47,7 @@
              ;; if you want to embed a ring handler into the figwheel http-kit
              ;; server, this is for simple ring servers, if this
              ;; doesn't work for you just run your own server :)
-             :ring-handler webdasher.server/logging-routes
+             :ring-handler sisl-cljs.server/logging-routes
 
              ;; To be able to open files in your editor from the heads up display
              ;; you will need to put a script on your path.

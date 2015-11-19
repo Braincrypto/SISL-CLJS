@@ -1,9 +1,9 @@
-(ns webdasher.settings
+(ns sisl-cljs.settings
   (:require
    [ajax.core :refer [GET POST]]
    [reagent.core :as reagent :refer [atom]]
    [clojure.string :refer [split-lines split]]
-   [webdasher.log :as log]))
+   [sisl-cljs.log :as log]))
 
 (defonce request-counter (atom 1))
 (defonce fresh-trial (atom nil))

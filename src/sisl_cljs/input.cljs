@@ -1,10 +1,10 @@
-(ns webdasher.input
+(ns sisl-cljs.input
   (:require [goog.dom :as dom]
             [goog.events :as events]
-            [webdasher.cue :as cue]
-            [webdasher.score :as score]
-            [webdasher.log :as log]
-            [webdasher.settings :refer [scenario]]))
+            [sisl-cljs.cue :as cue]
+            [sisl-cljs.score :as score]
+            [sisl-cljs.log :as log]
+            [sisl-cljs.settings :refer [scenario]]))
 
 (defn event-to-char [e]
   (-> e

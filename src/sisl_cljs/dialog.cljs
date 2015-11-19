@@ -1,8 +1,8 @@
-(ns webdasher.dialog
+(ns sisl-cljs.dialog
   (:require
    [reagent.core :as r]
-   [webdasher.log :as log]
-   [webdasher.settings :refer [scenario]]))
+   [sisl-cljs.log :as log]
+   [sisl-cljs.settings :refer [scenario]]))
 
 (defonce selection (r/atom nil))
 

@@ -1,14 +1,14 @@
-(ns ^:figwheel-always webdasher.core
+(ns ^:figwheel-always sisl-cljs.core
   (:require
    [reagent.core :as reagent :refer [atom]]
    [cljs.core.async :refer [<!]]
-   [webdasher.render :as render]
-   [webdasher.settings :as settings]
-   [webdasher.input :as input]
-   [webdasher.cue :as cue]
-   [webdasher.dialog :as dialog]
-   [webdasher.score :as score]
-   [webdasher.log :as log])
+   [sisl-cljs.render :as render]
+   [sisl-cljs.settings :as settings]
+   [sisl-cljs.input :as input]
+   [sisl-cljs.cue :as cue]
+   [sisl-cljs.dialog :as dialog]
+   [sisl-cljs.score :as score]
+   [sisl-cljs.log :as log])
   (:require-macros
    [cljs.core.async.macros :refer [go]]))
 
