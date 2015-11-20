@@ -1,7 +1,7 @@
 (ns ^:figwheel-always sisl-cljs.core
   (:require
    [reagent.core :as reagent :refer [atom]]
-   [cljs.core.async :refer [<!]]
+   [cljs.core.async :refer [chan <!]]
    [sisl-cljs.render :as render]
    [sisl-cljs.settings :as settings]
    [sisl-cljs.input :as input]
@@ -139,7 +139,14 @@
                           (. js/document (getElementById "app")))
 
 
-(input/setup-input-handlers app-state)
+(defonce initial-setup
+  (let [settings-channel (chan)]
+    (input/setup-input-handlers app-state)
+    (settings/load-settings settings-channel)
+    (go
+      (log/console (<! settings-channel))
+      (log/console (<! settings-channel))
+      (new-game))))
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on

@@ -1,6 +1,7 @@
 (ns sisl-cljs.settings
   (:require
    [ajax.core :refer [GET POST]]
+   [cljs.core.async :refer [put!]]
    [reagent.core :as reagent :refer [atom]]
    [clojure.string :refer [split-lines split]]
    [sisl-cljs.log :as log]))
@@ -23,15 +24,16 @@
        (map try-int)
        (zipmap trial-row-labels)))
 
-(defn parse-trial-file [response]
+(defn parse-trial [chan response]
   (->> response
        split-lines
        rest
        (map parse-trial-row)
-       (reset! fresh-trial)))
+       (reset! fresh-trial))
+  (put! chan "Trial loaded."))
 
-(defn load-trial-file [filename]
-  (GET filename {:handler parse-trial-file
+(defn load-trial [chan filename]
+  (GET filename {:handler (partial parse-trial chan)
                  :error-handler #(log/console "Failed to parse trial file.")}))
 
 ;; Scenario parsing
@@ -69,21 +71,20 @@
            :key-map key-map
            :lane-gap lane-gap)))
 
-(defn parse-scenario-file [response]
+(defn parse-scenario [chan response]
   (->> response
        calculate-parameters
-       (reset! scenario)))
+       (reset! scenario))
+  (put! chan "Scenario loaded."))
 
-(defn load-scenario [filename]
-  (GET filename {:handler parse-scenario-file
+(defn load-scenario [chan filename]
+  (GET filename {:handler (partial parse-scenario chan)
                  :error-handler #(log/console "Failed to parse scenario file.")
                  :response-format :json
                  :keywords? true}))
 
-(defn load-config []
+(defn load-settings [chan]
   (let [counter (swap! request-counter inc)
         param (str "?foo=" counter)]
-    (load-trial-file (str "trial.csv" param))
-    (load-scenario (str "scenario.json" param))))
-
-(defonce load-config-at-start (load-config))
+    (load-trial chan (str "trial.csv" param))
+    (load-scenario chan (str "scenario.json" param))))

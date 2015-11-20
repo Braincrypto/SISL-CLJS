@@ -1,5 +1,6 @@
 (ns sisl-cljs.render
   (:require
+   [cljs.core.async :refer [chan]]
    [sisl-cljs.board :as board]
    [sisl-cljs.log :as log]
    [sisl-cljs.dialog :as dialog]
@@ -48,9 +49,9 @@ connection and try again later."]])
               :on-click #((controls :pause-game))}])
    [:input {:type "button"
             :value "Reload Settings"
-            :on-click #(sisl-cljs.settings/load-config)}]])
+            :on-click #(sisl-cljs.settings/load-settings (chan))}]])
 
-(def interesting-keys [:status :speed])
+(def interesting-keys [:speed])
 
 (defn should-show-log-warning [state]
   (let [{{success :success :as log-result} :log-result status :status} @state]
