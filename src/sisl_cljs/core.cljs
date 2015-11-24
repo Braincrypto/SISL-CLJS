@@ -146,7 +146,8 @@
     (go
       (log/console (<! settings-channel))
       (log/console (<! settings-channel))
-      (new-game))))
+      (if-not (:debug @settings/scenario)
+        (new-game)))))
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
