@@ -1,10 +1,32 @@
 (ns sisl-cljs.render
   (:require
    [cljs.core.async :refer [chan]]
+   [goog.style :as style]
+   [goog.dom :as dom]
    [sisl-cljs.board :as board]
    [sisl-cljs.log :as log]
    [sisl-cljs.dialog :as dialog]
    [sisl-cljs.settings :refer [scenario fresh-trial]]))
+
+(defn set-font-size [elt size]
+  (set! (.. elt -style -fontSize) (str size "px")))
+
+(defn get-element-width [elt]
+  (-> elt style/getSize .-width))
+
+(defn scale-completion-code []
+  (let [div (dom/getElement "completion_code")
+        span (dom/getElement "completion_span")
+        target-width (* 0.90 (get-element-width div))]
+    (doseq [font-size (range 10 50)
+            :while (< (get-element-width span) target-width)]
+      (set-font-size span font-size))))
+
+(defn render-completion-code [state]
+  (js/setTimeout scale-completion-code 0)
+  [:div#completion_code
+   [:span#completion_span
+    (get-in @state [:log-result :code])]])
 
 (defn render-finished-success [state]
   [:div.dialog
@@ -12,8 +34,7 @@
    [:h1 "Congratulations!"]
    [:p "You're finished. Thanks for playing!"]
    [:p "Your completion code is"]
-   [:div.completion_code
-    (get-in @state [:log-result :code])]])
+   [render-completion-code state]])
 
 (defn render-finished-failure [state]
   [:div.dialog

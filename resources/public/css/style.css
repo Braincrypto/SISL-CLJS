@@ -76,13 +76,16 @@ div.dialog span.response {
     margin-left: 5px;
 }
 
-.completion_code {
+#completion_code {
     display: block;
     margin: auto;
     background: rgb(80,0,0);
     border: 1px solid black;
-    font-size: 1.7em;
     text-align: center;
+}
+
+#completion_span {
+    white-space: nowrap;
 }
 
 /* Feedback */
