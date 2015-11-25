@@ -16,9 +16,13 @@
            :velocity v)))
 
 (defn fall [dt cue]
-  (assoc cue
-         :prev-top (:top cue)
-         :top (+ (:top cue) (* (:velocity cue) dt))))
+  (let [prev-top (:top cue)
+        new-top (+ prev-top (* (:velocity cue) dt))
+        target-offset (int (- (@scenario :middle-of-zone) new-top))]
+    (assoc cue
+           :prev-top prev-top
+           :top new-top
+           :target_offset target-offset)))
 
 (defn missed? [cue]
   (> (:top cue) (- (@scenario :board-height) (@scenario :cue-height))))
