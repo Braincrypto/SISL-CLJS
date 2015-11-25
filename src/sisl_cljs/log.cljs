@@ -1,5 +1,6 @@
 (ns sisl-cljs.log
   (:require
+   [goog.Uri]
    [ajax.core :refer [GET POST]]
    [cljs.core.async :refer [chan <! >! put! close!]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -127,15 +128,16 @@
           (recur (inc tries)))))))
 
 (defn new-session []
-  (try-request
-   new-session-url
-   {:params {:session
-             {:browser_info (.-userAgent js/navigator)
-              :machine_info ""
-              :turk_user_id ""
-              :turk_hit_id ""
-              :turk_assignment_id ""}}
-    :reason "Could not start new session."}))
+  (let [url (new goog.Uri (.-URL js/document))]
+    (try-request
+     new-session-url
+     {:params {:session
+               {:browser_info (.-userAgent js/navigator)
+                :machine_info ""
+                :turk_user_id (.getParameterValue url "workerId")
+                :turk_hit_id (.getParameterValue url "hitId")
+                :turk_assignment_id (.getParameterValue url "assignmentId")}}
+      :reason "Could not start new session."})))
 
 (defn send-to-server [session-id queue]
   (try-request

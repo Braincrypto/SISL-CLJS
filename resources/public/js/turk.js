@@ -48,7 +48,6 @@ function mode_Active(assignmentId)
   document.getElementById('submitButton').value = "You must COMPLETE the HIT before you can submit the results.";
   document.getElementById('completionCode').disabled = true;
   document.getElementById('assignmentId').value = assignmentId;
-  document.getElementById("completeButton").style.display = "block";
 }
 
 function mode_Finished(finishTag)
