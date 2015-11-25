@@ -1,10 +1,13 @@
 (ns ^:figwheel-always sisl-cljs.core
   (:require
    [reagent.core :as reagent :refer [atom]]
-   [cljs.core.async :refer [chan <!]]
+   [cljs.core.async :refer [chan timeout <!]]
+   [goog.dom :as dom]
+   [goog.events :as events]
    [sisl-cljs.render :as render]
    [sisl-cljs.settings :as settings]
-   [sisl-cljs.input :as input]
+   [sisl-cljs.keyboard :as keyboard]
+   [sisl-cljs.mouse :as mouse]
    [sisl-cljs.cue :as cue]
    [sisl-cljs.dialog :as dialog]
    [sisl-cljs.score :as score]
@@ -21,6 +24,8 @@
    :status :stopped
    :current-time nil
    :accumulator 0.0
+
+   :input-mode :keyboard
    :keys-down #{}
 
    :score {:hits 0 :misses 0 :streak 0}
@@ -138,16 +143,26 @@
 (reagent/render-component [render/render-page app-state debug-methods]
                           (. js/document (getElementById "app")))
 
-
 (defonce initial-setup
   (let [settings-channel (chan)]
-    (input/setup-input-handlers app-state)
+    (events/removeAll (dom/getWindow))
     (settings/load-settings settings-channel)
     (go
       (log/console (<! settings-channel))
       (log/console (<! settings-channel))
+
+      ;; We need a brief timeout here so Reagent can
+      ;; receive the r/atom callbacks from trial and scenario
+      ;; and render the board so mouse/setup-input-handlers will
+      ;; have a "board" element to target.
+      (<! (timeout 1))
+
+      (keyboard/setup-input-handlers app-state)
+      (mouse/setup-input-handlers app-state)
+
       (if-not (:debug @settings/scenario)
         (new-game)))))
+
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on

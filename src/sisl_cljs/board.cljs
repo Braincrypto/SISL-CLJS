@@ -65,6 +65,17 @@
      ^{:key lane}
      [render-lane state lane])])
 
+(defn render-cursor [state]
+  (let [width 30]
+    [:div.cursor
+     {:style {:position "relative"
+              :left (- (:mouse-x @state) (/ (@scenario :lane-width) 2))
+              :background "black"
+
+              :top (@scenario :lane-height)
+              :width (@scenario :lane-width)
+              :height 20}}]))
+
 (defn render-score [state]
   (let [{:keys [hits misses streak]} (:score @state)]
     [:ul.score
@@ -76,5 +87,6 @@
   [:div.board
    {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
    [render-lanes state]
+   (if (= (:input-mode state) :mouse)
+     [render-cursor state])
    [render-score state]])
-

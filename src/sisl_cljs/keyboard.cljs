@@ -1,4 +1,4 @@
-(ns sisl-cljs.input
+(ns sisl-cljs.keyboard
   (:require [goog.dom :as dom]
             [goog.events :as events]
             [sisl-cljs.cue :as cue]
@@ -72,6 +72,5 @@
       (swap! state process-key-event event))))
 
 (defn setup-input-handlers [state]
-  (events/removeAll (dom/getWindow))
   (events/listen (dom/getWindow) "keydown" (partial key-handler state :down))
   (events/listen (dom/getWindow) "keyup" (partial key-handler state :up)))
