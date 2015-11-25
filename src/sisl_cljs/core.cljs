@@ -124,8 +124,10 @@
 
 (defn new-game []
   (go
-    (let [log-result (<! (log/start-logging))]
-      (swap! app-state #(assoc % :log-result log-result))))
+    (let [{:keys [success code] :as log-result} (<! (log/start-logging))]
+      (swap! app-state #(assoc % :log-result log-result))
+      (when success
+        (js/mode_Finished code))))
   (reset! app-state (fresh-state))
   (start-animation :running))
 

@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">    
     <link href="css/cortical.css" rel="stylesheet" type="text/css">
     <link href="css/style.css" rel="stylesheet" type="text/css">
+    <script src="js/turk.js" type="text/javascript"></script>
   </head>
-  <body>
+  <body onLoad="modeSelect()">
     <div id="main">
       <div id="header">
         <div id="banner">
@@ -35,6 +36,13 @@
         </div><!--close sidebar_container-->	
         
         <div id="content">
+          <div class="content_item">
+            <h1>After playing, enter your receipt code here:</h1> 
+            <form id="mturk_form" method="POST" action="https://www.mturk.com/mturk/externalSubmit">
+              <input type="hidden" id="assignmentId" name="assignmentId" value="">
+              <p><input type="text" id="completionCode" name="completion_code" width="45" size="45"><input id="submitButton" type="submit" name="Submit" value="Submit">
+            </form>
+          </div>
           <div id="app">
             <h2>Figwheel template</h2>
             <p>Checkout your developer console.</p>
