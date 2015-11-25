@@ -127,13 +127,14 @@
           response
           (recur (inc tries)))))))
 
-(defn new-session []
+(defn new-session [scenario]
   (let [url (new goog.Uri (.-URL js/document))]
     (try-request
      new-session-url
      {:params {:session
                {:browser_info (.-userAgent js/navigator)
                 :machine_info ""
+                :scenario (str scenario)
                 :turk_user_id (.getParameterValue url "workerId")
                 :turk_hit_id (.getParameterValue url "hitId")
                 :turk_assignment_id (.getParameterValue url "assignmentId")}}
@@ -170,11 +171,11 @@
           (<! (finish-session session-id))
           server-response)))))
 
-(defn start-logging []
+(defn start-logging [scenario]
   (reset! event-channel (chan))
   (go
     (let [{:keys [session-id] :as response}
-          (<! (new-session))]
+          (<! (new-session scenario))]
       (if session-id
         (<! (logging-loop session-id @event-channel))
         response))))

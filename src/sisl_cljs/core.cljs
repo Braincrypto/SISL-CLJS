@@ -124,7 +124,7 @@
 
 (defn new-game []
   (go
-    (let [{:keys [success code] :as log-result} (<! (log/start-logging))]
+    (let [{:keys [success code] :as log-result} (<! (log/start-logging @settings/scenario))]
       (swap! app-state #(assoc % :log-result log-result))
       (when success
         (js/mode_Finished code))))
