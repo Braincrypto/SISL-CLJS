@@ -17,6 +17,15 @@ div.board {
     margin: auto;
 }
 
+div.board.paused {
+    -webkit-filter: blur(3px);
+    -moz-filter: blur(3px);
+    -o-filter: blur(3px);
+    -ms-filter: blur(3px);
+    filter: blur(3px);
+    opacity: 0.4;
+}
+
 div.lane {
     top: 0px;
     margin: 0px;
@@ -112,15 +121,19 @@ ul.score > li.streak { text-align: right; }
 .log_warning {
     position: absolute;
     top: 30%;
-    left: 5%;
-    width: 90%;
-    background: rgba(150,0,0, 0.6);
+    left: 30%;
+    width: 40%;
+    background: rgba(150,0,0, 0.7);
     border: 1px solid black;
 }
 
 .log_warning p {
-    margin: 0;
-    padding: 0.5em;
+    margin: 0.5em;
+    padding: 0;
+}
+
+.log_warning input {
+    margin: 0.5em;
 }
 
 img.error {

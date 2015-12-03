@@ -11,10 +11,6 @@
 (defn alert [& message]
   (js/alert (apply str message)))
 
-(defn log-state [state message]
-  (console (str message " " state))
-  state)
-
 ;; :key_correct
 ;; :key_incorrect
 ;; :cue_appear
@@ -24,6 +20,7 @@
 ;; :cue_exit_zone
 ;; :dialog_response
 ;; :speed_change
+;; :pause
 
 (def event-log-template
   {
@@ -71,6 +68,13 @@
              :event_value new-speed
              :trial_row_id -1)))
 
+(defn pause-event [value]
+  (-> event-log-template
+      timestamp
+      (assoc :event_type :pause
+             :event_value value
+             :trial_row_id -1)))
+
 (defn dialog-response [row-id response]
   (-> event-log-template
       timestamp
@@ -99,7 +103,6 @@
 
 (defn record-key [event key-state]
   (record-event (key-response event key-state)))
-
 
 (defn wrap-params [params channel reason]
   (assoc

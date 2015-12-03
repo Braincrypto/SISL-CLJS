@@ -118,9 +118,15 @@
     (reset! animation-frame-request nil)))
 
 (defn pause-game []
+  (log/record-event (log/pause-event 0))
   (cancel-animation)
   (swap! app-state
          #(assoc % :status :paused)))
+
+(defn resume-game []
+  (when (= (:status @app-state) :paused)
+    (log/record-event (log/pause-event 1))
+    (start-animation :running)))
 
 (defn new-game []
   (go
@@ -140,10 +146,19 @@
   {:start-animation start-animation
    :new-game new-game
    :reset-game reset-game
-   :pause-game pause-game})
+   :pause-game pause-game
+   :resume-game resume-game})
 
 (reagent/render-component [render/render-page app-state debug-methods]
                           (. js/document (getElementById "app")))
+
+(defn blur-handler [event]
+  (if (and (= :running (:status @app-state))
+           (not (:debug @settings/scenario)))
+    (pause-game)))
+
+(defn setup-focus-handlers []
+  (events/listen (dom/getWindow) "blur" blur-handler))
 
 (defonce initial-setup
   (let [settings-channel (chan)]
@@ -159,6 +174,7 @@
       ;; have a "board" element to target.
       (<! (timeout 1))
 
+      (setup-focus-handlers)
       (keyboard/setup-input-handlers app-state)
       (mouse/setup-input-handlers app-state)
 

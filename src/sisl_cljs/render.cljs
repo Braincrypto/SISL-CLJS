@@ -56,23 +56,23 @@ connection and try again later."]])
    (if (= (:status @state) :stopped)
        [:input {:type "button"
                 :value "Start"
-                :on-click #((controls :new-game))}]
+                :on-click (controls :new-game)}]
        [:input {:type "button"
                 :value "Reset"
-                :on-click #((controls :reset-game))}])
+                :on-click (controls :reset-game)}])
    (when (= (:status @state) :paused)
      [:input {:type "button"
               :value "Resume"
-              :on-click #((controls :start-animation) :running)}])
+              :on-click (controls :resume-game)}])
    (when (= (:status @state) :running)
      [:input {:type "button"
               :value "Pause"
-              :on-click #((controls :pause-game))}])
+              :on-click (controls :pause-game)}])
    [:input {:type "button"
             :value "Reload Settings"
             :on-click #(sisl-cljs.settings/load-settings (chan))}]])
 
-(def interesting-keys [:speed])
+(def interesting-keys [:status :speed])
 
 (defn should-show-log-warning [state]
   (let [{{success :success :as log-result} :log-result status :status} @state]
@@ -97,6 +97,15 @@ connection and try again later."]])
      [render-debug-controls state controls]
      [render-debug-info state]]))
 
+(defn render-paused [state controls]
+  (if (= (:status @state) :paused)
+    [:div.log_warning
+     [:p
+      "We noticed you stepped away for a second so we paused for you."]
+     [:input {:type "button"
+              :value "Resume"
+              :on-click (controls :resume-game)}]]))
+
 (defn render-page [state controls]
   (if (and @scenario @fresh-trial)
     [:div.appcontents
@@ -109,6 +118,7 @@ connection and try again later."]])
 
        [board/render-board state])
      [render-log-warning state]
+     [render-paused state controls]
      [render-debug state controls]]
     [:div.appcontents "Loading..."]))
 

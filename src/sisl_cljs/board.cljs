@@ -84,9 +84,11 @@
      [:li.streak "Streak: " streak]]))
 
 (defn render-board [state]
-  [:div.board
-   {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
-   [render-lanes state]
-   (if (= (:input-mode state) :mouse)
-     [render-cursor state])
-   [render-score state]])
+  (let [class (if (= :paused (:status @state)) "paused" "")]
+    [:div.board
+     {:style {:height (@scenario :board-height) :width (@scenario :board-width)}
+      :class class}
+     [render-lanes state]
+     (if (= (:input-mode state) :mouse)
+       [render-cursor state])
+     [render-score state]]))

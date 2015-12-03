@@ -68,9 +68,11 @@
         char (event-to-char e)
         lane (key-lane state char)
         event {:state transition :character char :lane lane}]
-    (if (and lane (not repeat))
+    (if (and lane
+             (not repeat)
+             (not= (:status @state) :paused))
       (swap! state process-key-event event))))
 
 (defn setup-input-handlers [state]
-  (events/listen (dom/getWindow) "keydown" (partial key-handler state :down))
-  (events/listen (dom/getWindow) "keyup" (partial key-handler state :up)))
+  (events/listen (dom/getWindow) "keydown" #(key-handler state :down %))
+  (events/listen (dom/getWindow) "keyup" #(key-handler state :up %)))
