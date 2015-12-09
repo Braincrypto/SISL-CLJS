@@ -32,7 +32,7 @@
   (doseq [hit hit-cues]
     (log/record-cue :key_correct hit speed)
     (log/record-cue :cue_disappear hit speed))
-  (if missed-cue
+  (if (and (empty? hit-cues) missed-cue)
       (log/record-cue :key_incorrect missed-cue speed))
   state)
 

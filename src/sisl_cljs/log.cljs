@@ -11,6 +11,7 @@
 (defn alert [& message]
   (js/alert (apply str message)))
 
+
 ;; :key_correct
 ;; :key_incorrect
 ;; :cue_appear
@@ -49,7 +50,7 @@
 (defonce event-channel (atom (chan)))
 (def when-to-send 100)
 
-(defn timestamp [event]
+(defn- timestamp [event]
   (assoc event
          :time_stamp_ms (int (. js/performance now))
          :date_time (.toISOString (js/Date.))))
@@ -89,7 +90,28 @@
              :event_value (:lane event)
              :key_state key-state)))
 
+;; Event log debugging
+(def verbose-debug false)
+
+(def interesting-event-type
+  #{:key_correct :key_incorrect})
+
+(def interesting-event-keys
+  #{:event_type :event_value})
+
+(defn- interesting-event-filter
+  [{:keys [event_type event_value] :as event}]
+  (interesting-event-type event_type))
+
+(defn- event-debug-log [event]
+  (when (and verbose-debug
+             (interesting-event-filter event))
+    (console "Event: "
+             (select-keys event interesting-event-keys))))
+
+
 (defn record-event [event]
+  (event-debug-log event)
   (put! @event-channel event))
 
 (defn record-cue [event cue speed]
@@ -104,7 +126,7 @@
 (defn record-key [event key-state]
   (record-event (key-response event key-state)))
 
-(defn wrap-params [params channel reason]
+(defn- wrap-params [params channel reason]
   (assoc
    {:handler #(put! channel %)
     :error-handler
@@ -116,7 +138,7 @@
     :keywords? true}
    :params params))
 
-(defn try-request
+(defn- try-request
   [url
    {:keys [params max-tries reason]
     :or {params {}
@@ -130,7 +152,7 @@
           response
           (recur (inc tries)))))))
 
-(defn new-session [scenario]
+(defn- new-session [scenario]
   (let [url (new goog.Uri (.-URL js/document))]
     (try-request
      new-session-url
@@ -143,20 +165,20 @@
                 :turk_assignment_id (.getParameterValue url "assignmentId")}}
       :reason "Could not start new session."})))
 
-(defn send-to-server [session-id queue]
+(defn- send-to-server [session-id queue]
   (try-request
    log-upload-url
    {:params {:session session-id
              :data queue}
     :reason "Could not upload log chunk."}))
 
-(defn finish-session [session-id]
+(defn- finish-session [session-id]
   (try-request
    finish-session-url
    {:params {:session session-id}
     :reason "Could not finish log session."}))
 
-(defn logging-loop [session-id channel]
+(defn- logging-loop [session-id channel]
   (go-loop [queue #queue []]
     (if-let [event (<! channel)]
       (let [bigger-queue (conj queue event)
