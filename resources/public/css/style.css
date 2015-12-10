@@ -66,6 +66,7 @@ div.dialog {
     position: relative;
     margin: auto;
     background: rgb(50,50,50);
+    overflow-y: auto;
 }
 
 div.dialog > h1 {

@@ -4,6 +4,13 @@
    [sisl-cljs.log :as log]
    [sisl-cljs.settings :refer [scenario]]))
 
+(def dialog-not-found
+  {:type "text"
+   :title "Dialog Not Found"
+   :text "Oops! It looks like the experimenter requested a dialog
+that they didn't provide text for. Sorry about that!"
+   :button "I Forgive You"})
+
 (defonce selection (r/atom nil))
 
 (defn process-dialog [state event]
@@ -31,7 +38,7 @@
 
 (defn render-dialog [state controls]
   (let [{:keys [title type text button options :as dialog]}
-        (get-in @scenario [:dialog (:dialog @state)])
+        (get-in @scenario [:dialog (:dialog @state)] dialog-not-found)
 
         rating (= type "rating")]
     [:div.dialog

@@ -10,6 +10,44 @@
 (defonce fresh-trial (atom nil))
 (defonce scenario (atom nil))
 
+(def defaults
+  {
+   :debug true
+   :board-height 600
+   :board-width 300
+   :lane-width 60
+   :bottom-gap 50
+   :cue-width-multiplier 0.8
+   :cue-height-multiplier 0.8
+   :target-height-multiplier 1.2
+   :lane-keys ["D" "F" "J" "K"]
+   :speed {
+           :default 1.0
+           :lookback 12
+           :down-threshold 6
+           :up-threshold 9
+           :numerator 21.0
+           :denominator 20.0
+           :max-speed 500.0
+           :min-speed 0.5
+           }
+   :colors [{:hue 0   :saturation 1.0 :value 1.0 } ;red
+            {:hue 120 :saturation 1.0 :value 1.0 } ;green
+            {:hue 240 :saturation 1.0 :value 1.0 } ;blue
+            {:hue 60  :saturation 1.0 :value 1.0 } ;yellow
+            {:hue 180 :saturation 1.0 :value 1.0 } ;cyan
+            {:hue 300 :saturation 1.0 :value 1.0 }] ;magenta
+   })
+
+(defn to-hsl [color]
+  (let [{h :hue sat :saturation val :value} color
+        l (* (- 2 sat) (/ val 2))
+        s (cond
+            (= l 1) 0
+            (< l 0.5) (/ (* sat val) (* l 2))
+            true (/ (* sat val) (- 2 (* l 2))))]
+    (str "hsl(" h "," (* 100 s) "%," (* 100 l) "%)")))
+
 (defn try-int [val]
   (let [int-val (js/parseInt val)]
     (if (js/isNaN int-val)
@@ -45,7 +83,8 @@
                 cue-width-multiplier
                 cue-height-multiplier
                 target-height-multiplier
-                lane-keys]} scenario
+                lane-keys
+                colors]} scenario
         lane-height (- board-height bottom-gap)
         cue-width (* lane-width cue-width-multiplier)
         cue-height (* lane-width cue-height-multiplier)
@@ -57,7 +96,8 @@
         lane-count (count lane-keys)
         key-map (zipmap lane-keys (range))
         lane-gap (/ (- board-width (* lane-count lane-width))
-                    (dec lane-count))]
+                    (dec lane-count))
+        lane-colors (into [] (map to-hsl colors))] 
     (assoc scenario
            :lane-height lane-height
            :cue-width cue-width
@@ -69,10 +109,12 @@
            :middle-of-zone middle-of-zone
            :lane-count lane-count
            :key-map key-map
-           :lane-gap lane-gap)))
+           :lane-gap lane-gap
+           :lane-colors lane-colors)))
 
 (defn parse-scenario [chan response]
   (->> response
+       (merge defaults)
        calculate-parameters
        (reset! scenario))
   (put! chan "Scenario loaded."))

@@ -20,6 +20,15 @@
         "min-speed": 0.5
     },
 
+    "colors" : [
+        {"hue": 0, "saturation": 1.0, "value": 1.0},
+        {"hue": 120, "saturation": 1.0, "value": 1.0},
+        {"hue": 240, "saturation": 1.0, "value": 1.0},
+        {"hue": 60, "saturation": 1.0, "value": 1.0},
+        {"hue": 180, "saturation": 1.0, "value": 1.0},
+        {"hue": 300, "saturation": 1.0, "value": 1.0},
+    ],
+
     "dialog" : {
         "dialog0" : {
             "title": "Instructions",
