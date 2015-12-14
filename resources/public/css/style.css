@@ -48,8 +48,12 @@ div.target {
     border-top: 1px solid black;
 }
 
-div.target.highlighted {
+div.target.highlighted.miss {
     background: red;
+}
+
+div.target.highlighted.hit {
+    background: green;
 }
 
 span.prompt {

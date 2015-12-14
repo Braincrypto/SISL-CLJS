@@ -11,7 +11,10 @@
 (defn render-target [state lane]
   (let [key (nth (@scenario :lane-keys) lane)
         highlighted ((@state :keys-down) key)
-        class (if highlighted "highlighted" "")]
+        class (case highlighted
+                true "highlighted hit"
+                false "highlighted miss"
+                "")]
     [:div.target {:style {:height (@scenario :target-height)} :class class}
      [:span.prompt {:style {:width (@scenario :lane-width)}} key]]))
 

@@ -11,11 +11,13 @@
       .-keyCode
       js/String.fromCharCode))
 
-(defn update-keys-down [state event]
-  (let [keys-down (:keys-down state)
-        {key :character new-state :state} event
-        operation (if (= :down new-state) conj disj)]
-    (assoc state :keys-down (operation keys-down key))))
+(defn update-keys-down
+  [{{key :character new-state :state hit :hit} :current-event
+    keys-down :keys-down
+    :as state}]
+  (if (= :down new-state)
+    (assoc-in state [:keys-down key] hit)
+    (assoc state :keys-down (dissoc keys-down key))))
 
 (defn hit? [event cue]
   (if (and (= (:value cue) (:lane event))
@@ -24,22 +26,31 @@
     :hit
     :miss))
 
-(defn record-response [state event]
-  (log/record-key event (:keys-down state))
+(defn record-response
+  [{:keys [current-event keys-down] :as state}]
+  (log/record-key current-event keys-down)
   state)
 
-(defn record-hits [{:keys [speed] :as state} event hit-cues missed-cue]
-  (doseq [hit hit-cues]
-    (log/record-cue :key_correct hit speed)
-    (log/record-cue :cue_disappear hit speed))
-  (if (and (empty? hit-cues) missed-cue)
-      (log/record-cue :key_incorrect missed-cue speed))
-  state)
+(defn record-hits
+  [{:keys [speed current-event] :as state} hit-cues missed-cue]
+  (if (empty? hit-cues)
+    (do
+      (when missed-cue
+        (log/record-cue :key_incorrect missed-cue speed))
+      state)
+    (do
+      (doseq [hit hit-cues]
+        (log/record-cue :key_correct hit speed)
+        (log/record-cue :cue_disappear hit speed))
+      (assoc-in state [:current-event :hit] true))))
 
-(defn hit-cues [state event]
-  (if (and (= (:state event) :down) (= (:status state) :running))
+
+(defn hit-cues
+  [{:keys [current-event status cues scored-cues] :as state}]
+  (if (and (= (:state current-event) :down)
+           (= status :running))
     (let [{hit-cues :hit misses :miss}
-          (group-by (partial hit? event) (:cues state))
+          (group-by (partial hit? current-event) cues)
 
           [first-missed & rest-missed] (sort-by :top > misses)
 
@@ -49,16 +60,18 @@
                       misses)]
       (-> state
           (score/update-score hit-cues [first-missed])
-          (record-hits event hit-cues first-missed)
+          (record-hits hit-cues first-missed)
           (assoc :cues remaining
-                 :scored-cues (concat (:scored-cues state) hit-cues))))
+                 :scored-cues (concat scored-cues hit-cues))))
     state))
 
 (defn process-key-event [state event]
   (-> state
-      (update-keys-down event)
-      (record-response event)
-      (hit-cues event)))
+      (assoc :current-event event)
+      record-response
+      hit-cues
+      update-keys-down
+      (dissoc :current-event)))
 
 (defn key-lane [state c]
   ((@scenario :key-map) c))
@@ -67,7 +80,8 @@
   (let [repeat (.-repeat (.getBrowserEvent e))
         char (event-to-char e)
         lane (key-lane state char)
-        event {:state transition :character char :lane lane}]
+        event {:state transition :character char :lane lane
+               :hit false}]
     (if (and lane
              (not repeat)
              (not= (:status @state) :paused))

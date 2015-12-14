@@ -26,7 +26,7 @@
    :accumulator 0.0
 
    :input-mode :keyboard
-   :keys-down #{}
+   :keys-down {}
 
    :score {:hits 0 :misses 0 :streak 0}
    :score-updating true
