@@ -1,6 +1,7 @@
 (ns sisl-cljs.dialog
   (:require
    [reagent.core :as r]
+   [markdown.core :refer [md->html]]
    [sisl-cljs.log :as log]
    [sisl-cljs.settings :refer [scenario]]))
 
@@ -44,7 +45,8 @@ that they didn't provide text for. Sorry about that!"
     [:div.dialog
      {:style {:height (@scenario :board-height) :width (@scenario :board-width)}}
      [:h1 title]
-     [:p text]
+     [:div {:dangerouslySetInnerHTML
+            {:__html (md->html text)}}]
      (if rating
          [render-ratings options selection])
      [:p [:input {:type "button"

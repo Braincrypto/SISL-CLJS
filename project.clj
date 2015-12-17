@@ -9,6 +9,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [reagent "0.5.1"]
                  [cljs-ajax "0.3.14"]
+                 [markdown-clj "0.9.82"]
                  [ring/ring-json "0.4.0"]]
 
   :plugins [[lein-cljsbuild "1.1.0"]
