@@ -57,7 +57,7 @@
         "dialog3": {
             "title": "RecogIntro",
             "type": "text",
-            "text": "You did great! Did you notice anything in particular about the experiment? Maybe any patterns or repetitions? Whether you picked up on it or not, a sequence of cues was repeating over and over during the task. It wasn’t there the whole time, but for the majority of the time there was a specific repeating sequence. Now, we’d like to know if you can identify that sequence. We’re going to have you play through a few short sequences, and after each one, we ask that you rate much you think it was your repeating sequence. Hit “Continue” when you’re ready to go!",
+            "text": "You did great! Did you notice anything in particular about the experiment?\n\nMaybe any patterns or *repetitions*?\n\nWhether you picked up on it or not, a sequence of cues was repeating over and over during the task. It wasn’t there the whole time, but for the majority of the time there was a specific repeating sequence. Now, we’d like to know if you can identify that sequence.\n\nWe’re going to have you play through a few short sequences, and after each one, we ask that you rate much you think it was your repeating sequence. Hit “Continue” when you’re ready to go!",
             "button": "Continue"
         },
         "dialog4": {
