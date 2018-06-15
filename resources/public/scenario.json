@@ -29,6 +29,12 @@
         {"hue": 300, "saturation": 1.0, "value": 1.0}
     ],
 
+    "random-feedback": {
+        "probability": 0.0,
+        "flip": false,
+        "bias": 0.5
+    },
+
     "dialog" : {
         "dialog0" : {
             "title": "Instructions",

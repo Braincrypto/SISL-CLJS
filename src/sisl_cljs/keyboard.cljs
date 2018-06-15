@@ -11,12 +11,24 @@
       .-keyCode
       js/String.fromCharCode))
 
+(defn randomize-hit [hit]
+  (let [{:keys [flip probability bias]} (:random-feedback @scenario)
+        random (< (rand) probability)
+        biased (< (rand) bias)]
+    (if random
+      (if flip
+        (if biased
+          (not hit)
+          hit)
+        biased)
+      hit)))
+
 (defn update-keys-down
   [{{key :character new-state :state hit :hit} :current-event
     keys-down :keys-down
     :as state}]
   (if (= :down new-state)
-    (assoc-in state [:keys-down key] hit)
+    (assoc-in state [:keys-down key] (randomize-hit hit))
     (assoc state :keys-down (dissoc keys-down key))))
 
 (defn hit? [event cue]

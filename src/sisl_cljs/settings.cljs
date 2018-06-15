@@ -37,6 +37,15 @@
             {:hue 60  :saturation 1.0 :value 1.0 } ;yellow
             {:hue 180 :saturation 1.0 :value 1.0 } ;cyan
             {:hue 300 :saturation 1.0 :value 1.0 }] ;magenta
+   :random-feedback {
+                     ;; The probability that a given feedback will be altered.
+                     :probability 0.0
+
+                     ;; If true, feedback will be flipped with a probability equal
+                     ;; to the 'bias' value. If false, random feedback will be 'hit'
+                     ;; with a probability equal to the bias value and 'miss' otherwise.
+                     :flip false
+                     :bias 0.5}
    })
 
 (defn to-hsl [color]
