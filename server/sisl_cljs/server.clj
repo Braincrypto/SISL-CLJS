@@ -1,9 +1,11 @@
 (ns sisl-cljs.server
   (:require
    [compojure.core :refer [defroutes GET POST]]
+   [compojure.route :as route]
    [ring.util.response :refer [response status]]
    [ring.middleware.json :refer [wrap-json-response wrap-json-params]]
-   [ring.middleware.keyword-params :refer [wrap-keyword-params]]))
+   [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+   [clojure.java.io :as io]))
 
 (defonce current-session-id (atom 10000))
 
@@ -32,4 +34,6 @@
 (defroutes logging-routes
   (POST "/new-session.php" [] (wrap-handler new-session))
   (POST "/upload-data.php" [] (wrap-handler upload-data-chunk))
-  (POST "/finish-session.php" [] (wrap-handler finish-session)))
+  (POST "/finish-session.php" [] (wrap-handler finish-session))
+  (GET "/" [] (io/resource "public/index.html"))
+  (route/resources "/"))
