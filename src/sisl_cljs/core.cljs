@@ -49,6 +49,7 @@
      "dialog" dialog/process-dialog
      "speed" score/process-speed-event
      "score" score/process-score-event
+     "scenario" settings/process-scenario-event
      (fn [state event] state))
    state event))
 
@@ -140,6 +141,7 @@
 (defn reset-game []
   (cancel-animation)
   (log/stop-logging)
+  (settings/reset-scenario!)
   (reset! app-state (fresh-state)))
 
 (def debug-methods

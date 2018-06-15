@@ -8,6 +8,7 @@
 
 (defonce request-counter (atom 1))
 (defonce fresh-trial (atom nil))
+(defonce fresh-scenario (atom nil))
 (defonce scenario (atom nil))
 
 (def defaults
@@ -57,18 +58,19 @@
             true (/ (* sat val) (- 2 (* l 2))))]
     (str "hsl(" h "," (* 100 s) "%," (* 100 l) "%)")))
 
-(defn try-int [val]
-  (let [int-val (js/parseInt val)]
-    (if (js/isNaN int-val)
-      val
-      int-val)))
+(defn parse-value [val]
+  (if (js/isNaN val)
+    val
+    (if (.includes val ".")
+      (js/parseFloat val)
+      (js/parseInt val))))
 
 (def trial-row-labels [:cue-row-id :type :value :appear-time-ms :time-to-targ-ms :category])
 
 (defn parse-trial-row [row]
   (->> row
        (#(split % ","))
-       (map try-int)
+       (map parse-value)
        (zipmap trial-row-labels)))
 
 (defn parse-trial [chan response]
@@ -125,6 +127,7 @@
   (->> response
        (merge defaults)
        calculate-parameters
+       (reset! fresh-scenario)
        (reset! scenario))
   (put! chan "Scenario loaded."))
 
@@ -139,3 +142,13 @@
         param (str "?foo=" counter)]
     (load-trial chan (str "trial.csv" param))
     (load-scenario chan (str "scenario.json" param))))
+
+(defn process-scenario-event
+  [state {:keys [category value] :as event}]
+  (let [key-path (map keyword (split category "."))]
+    (swap! scenario
+           #(calculate-parameters (assoc-in % key-path value))))
+  state)
+
+(defn reset-scenario! []
+  (reset! scenario @fresh-scenario))
