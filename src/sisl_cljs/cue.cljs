@@ -24,7 +24,15 @@
            :top new-top
            :target_offset target-offset)))
 
-(defn missed? [cue]
+(defn color [{:keys [value scored] :as cue}]
+  (if (= scored 0)
+    "grey"
+    ((@scenario :lane-colors) value)))
+
+(defn visible? [cue]
+  (not (= (:scored cue) 1)))
+
+(defn hit-bottom? [cue]
   (> (:top cue) (- (@scenario :board-height) (@scenario :cue-height))))
 
 (defn in-target? [cue]
@@ -45,9 +53,9 @@
     (if (crossed-border? cue (@scenario border))
         (log/record-cue event-name cue (:speed state)))))
 
-(defn remove-missed-cues [state]
-  (let [{:keys [cues scored-cues speed]} state
-        {missed-cues true remaining-cues false} (group-by missed? cues)
+(defn remove-scored-cues
+  [{:keys [cues scored-cues speed] :as state}]
+  (let [{missed-cues true remaining-cues false} (group-by hit-bottom? cues)
         missed (map #(assoc % :missed true) missed-cues)]
     (doseq [cue missed]
       (log/record-cue :cue_disappear cue speed))

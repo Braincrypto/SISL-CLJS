@@ -31,12 +31,14 @@
     (assoc-in state [:keys-down key] (randomize-hit hit))
     (assoc state :keys-down (dissoc keys-down key))))
 
-(defn hit? [event cue]
-  (if (and (= (:value cue) (:lane event))
-           (cue/in-target? cue)
-           (not (:missed cue)))
-    :hit
-    :miss))
+(defn hit? [event
+            {:keys [value scored] :as cue}]
+  (if scored
+    :already-scored
+    (if (and (= value (:lane event))
+             (cue/in-target? cue))
+      :hits
+      :misses)))
 
 (defn record-response
   [{:keys [current-event keys-down] :as state}]
@@ -52,8 +54,7 @@
       state)
     (do
       (doseq [hit hit-cues]
-        (log/record-cue :key_correct hit speed)
-        (log/record-cue :cue_disappear hit speed))
+        (log/record-cue :key_correct hit speed))
       (assoc-in state [:current-event :hit] true))))
 
 
@@ -61,20 +62,24 @@
   [{:keys [current-event status cues scored-cues] :as state}]
   (if (and (= (:state current-event) :down)
            (= status :running))
-    (let [{hit-cues :hit misses :miss}
+    (let [{:keys [hits misses already-scored]}
           (group-by (partial hit? current-event) cues)
 
           [first-missed & rest-missed] (sort-by :top > misses)
+          hit-cues (map #(assoc % :scored 1) hits)
 
-          remaining (if (and first-missed
-                             (empty? hit-cues))
-                      (conj rest-missed (assoc first-missed :missed true))
-                      misses)]
+          missed? (and first-missed (empty? hit-cues))
+
+          missed-cues (if missed?
+                        [(assoc first-missed :scored 0)]
+                        [])
+
+          other-cues (concat already-scored (when-not missed? [first-missed]) rest-missed)]
       (-> state
-          (score/update-score hit-cues [first-missed])
+          (score/update-score hit-cues missed-cues)
           (record-hits hit-cues first-missed)
-          (assoc :cues remaining
-                 :scored-cues (concat scored-cues hit-cues))))
+          (assoc :cues (concat hit-cues missed-cues other-cues)
+                 :scored-cues (concat scored-cues hit-cues missed-cues))))
     state))
 
 (defn process-key-event [state event]

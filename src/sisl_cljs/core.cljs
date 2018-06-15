@@ -88,7 +88,7 @@
          :delta-time delta-time
          :accumulator accumulator)
         cue/update-cues
-        cue/remove-missed-cues
+        cue/remove-scored-cues
         process-trial-events
         score/update-speed
         check-finished)))

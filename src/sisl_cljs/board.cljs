@@ -3,11 +3,6 @@
    [sisl-cljs.cue :as cue]
    [sisl-cljs.settings :refer [scenario]]))
 
-(defn cue-color [{:keys [value missed] :as cue}]
-  (if missed
-    "grey"
-    ((@scenario :lane-colors) value)))
-
 (defn render-target [state lane]
   (let [key (nth (@scenario :lane-keys) lane)
         highlighted ((@state :keys-down) key)
@@ -24,21 +19,26 @@
                      :left (@scenario :cue-left)
                      :width (@scenario :cue-width)
                      :height (@scenario :cue-width)
-                     :background (cue-color cue)}}])
+                     :background (cue/color cue)}}])
 
 (defn lane-cues [state lane]
-  (filter #(= lane (:value %)) (:cues @state)))
+  (filter (fn [cue]
+            (and (= lane (:value cue))
+                 (cue/visible? cue)))
+          (:cues @state)))
 
 (defn lane-pos [lane]
-  (* lane (+ (@scenario :lane-gap) (@scenario :lane-width))))
+  (* lane
+     (+ (@scenario :lane-gap)
+        (@scenario :lane-width))))
 
 (defn render-lane [state lane]
   [:div.lane {:style {:width (@scenario :lane-width)
                       :height (@scenario :lane-height)
                       :left (lane-pos lane)}}
    [render-target state lane]
-   (for [{row-id :cue-row-id :as cue} (lane-cues state lane)]
-     ^{:key row-id}
+   (for [cue (lane-cues state lane)]
+     ^{:key (:cue-row-id cue)}
      [render-cue cue])])
 
 (defn render-lanes [state]

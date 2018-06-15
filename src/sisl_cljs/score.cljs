@@ -9,7 +9,7 @@
    hit
    miss]
   (let [hit-count (count hit)
-        miss-count (count (filter (complement :missed) miss))]
+        miss-count (count miss)]
     (assoc state :score
            (cond
              (not score-updating)

@@ -46,14 +46,18 @@ div.target {
     padding: 0px;
     background: grey;
     border-top: 1px solid black;
+
+    transition: background 0.75s;
 }
 
 div.target.highlighted.miss {
     background: red;
+    transition: background 0s;
 }
 
 div.target.highlighted.hit {
-    background: green;
+    background: #0F0;
+    transition: background 0s;
 }
 
 span.prompt {
