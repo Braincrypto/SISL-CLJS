@@ -67,14 +67,14 @@
       timestamp
       (assoc :event_type :speed_change
              :event_value new-speed
-             :trial_row_id -1)))
+             :trial_row_id 0)))
 
 (defn pause-event [value]
   (-> event-log-template
       timestamp
       (assoc :event_type :pause
              :event_value value
-             :trial_row_id -1)))
+             :trial_row_id 0)))
 
 (defn dialog-response [row-id response]
   (-> event-log-template

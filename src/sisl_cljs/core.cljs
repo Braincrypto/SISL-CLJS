@@ -133,7 +133,7 @@
   (go
     (let [{:keys [success code] :as log-result} (<! (log/start-logging @settings/scenario))]
       (swap! app-state #(assoc % :log-result log-result))
-      (when success
+      #_(when success
         (js/mode_Finished code))))
   (reset! app-state (fresh-state))
   (start-animation :running))
