@@ -1,6 +1,7 @@
 (ns sisl-cljs.keyboard
   (:require [goog.dom :as dom]
             [goog.events :as events]
+            [sisl-cljs.audio :as audio]
             [sisl-cljs.cue :as cue]
             [sisl-cljs.score :as score]
             [sisl-cljs.log :as log]
@@ -57,6 +58,22 @@
         (log/record-cue :key_correct hit speed))
       (assoc-in state [:current-event :hit] true))))
 
+(defn audio-trigger [state]
+  (let [{:keys [sound-mode lane-sounds]} @scenario
+        {:keys [current-event]} state
+        {:keys [lane hit]} current-event
+        correct-sound (lane-sounds lane)]
+    (case sound-mode
+      "key"
+      (audio/play correct-sound)
+
+      "cue"
+      (if hit
+        (audio/play correct-sound)
+        (audio/play audio/incorrect-sound))
+
+      true))
+  state)
 
 (defn hit-cues
   [{:keys [current-event status cues scored-cues] :as state}]
@@ -78,6 +95,7 @@
       (-> state
           (score/update-score hit-cues missed-cues)
           (record-hits hit-cues first-missed)
+          audio-trigger
           (assoc :cues (concat hit-cues missed-cues other-cues)
                  :scored-cues (concat scored-cues hit-cues missed-cues))))
     state))

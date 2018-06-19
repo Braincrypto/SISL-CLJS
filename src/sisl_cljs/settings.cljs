@@ -4,6 +4,7 @@
    [cljs.core.async :refer [put!]]
    [reagent.core :as reagent :refer [atom]]
    [clojure.string :refer [split-lines split]]
+   [sisl-cljs.audio :as audio]
    [sisl-cljs.log :as log]))
 
 (defonce request-counter (atom 1))
@@ -22,6 +23,15 @@
    :cue-height-multiplier 0.8
    :target-height-multiplier 1.2
    :lane-keys ["D" "F" "J" "K"]
+
+   ;; Possible sound modes:
+   ;; time - sound is played with time-based offset of cue crossing middle of zone
+   ;; space - sound is played with space-based offset of cue crossing middle of zone
+   ;; cue - sound is played on keystroke, corresponding with correctness
+   ;; key - sound is played on keystroke, regardless of correctness
+   :sound-mode "space"
+   :lane-pitches '(261.63 293.66 329.63 349.23)
+
    :speed {
            :default 1.0
            :lookback 12
@@ -95,6 +105,7 @@
                 cue-height-multiplier
                 target-height-multiplier
                 lane-keys
+                lane-pitches
                 colors]} scenario
         lane-height (- board-height bottom-gap)
         cue-width (* lane-width cue-width-multiplier)
@@ -106,9 +117,10 @@
         middle-of-zone (/ (+ top-of-zone bottom-of-zone) 2)
         lane-count (count lane-keys)
         key-map (zipmap lane-keys (range))
+        lane-sounds (mapv audio/ping lane-pitches)
         lane-gap (/ (- board-width (* lane-count lane-width))
                     (dec lane-count))
-        lane-colors (into [] (map to-hsl colors))] 
+        lane-colors (into [] (map to-hsl colors))]
     (assoc scenario
            :lane-height lane-height
            :cue-width cue-width
@@ -120,6 +132,7 @@
            :middle-of-zone middle-of-zone
            :lane-count lane-count
            :key-map key-map
+           :lane-sounds lane-sounds
            :lane-gap lane-gap
            :lane-colors lane-colors)))
 
