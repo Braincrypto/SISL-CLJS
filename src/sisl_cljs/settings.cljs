@@ -30,7 +30,7 @@
    ;; cue - sound is played on keystroke, corresponding with correctness
    ;; key - sound is played on keystroke, regardless of correctness
    :sound-mode "space"
-   :lane-pitches '(261.63 293.66 329.63 349.23)
+   :lane-pitches [261.63 293.66 329.63 349.23]
 
    :speed {
            :default 1.0
@@ -75,7 +75,7 @@
       (js/parseFloat val)
       (js/parseInt val))))
 
-(def trial-row-labels [:cue-row-id :type :value :appear-time-ms :time-to-targ-ms :category])
+(def trial-row-labels [:cue-row-id :type :value :appear-time-ms :time-to-targ-ms :category :audio-offset])
 
 (defn parse-trial-row [row]
   (->> row

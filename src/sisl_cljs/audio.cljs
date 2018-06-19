@@ -36,4 +36,16 @@
    destination))
 
 (defn play [synth]
-  (synth context (current-time context) 0.00))
+  (synth context (+ 0.01 (current-time context)) 0.00))
+
+(def warmup-sound
+  (connect->
+   (square 100)
+   (gain 0.0001)
+   destination))
+
+(defn warmup []
+  (warmup-sound context (+ 0.01 (current-time context)) 0.00))
+
+(defonce keep-warm
+  (.setInterval js/window warmup 1000))

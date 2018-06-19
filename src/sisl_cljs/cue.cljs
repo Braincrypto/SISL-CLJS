@@ -1,6 +1,7 @@
 (ns sisl-cljs.cue
   (:require
    [sisl-cljs.settings :refer [scenario]]
+   [sisl-cljs.audio :as audio]
    [sisl-cljs.score :as score]
    [sisl-cljs.log :as log]))
 
@@ -15,14 +16,34 @@
            :top top
            :velocity v)))
 
-(defn fall [dt cue]
+(defn audio-trigger [speed old-cue new-target-offset]
+  (let [{:keys [sound-mode lane-sounds]} @scenario
+        {:keys [velocity target-offset value audio-offset]} old-cue
+        sound (lane-sounds value)]
+    (when (not= audio-offset -1)
+      (case sound-mode
+        "space"
+        (when (and (> target-offset audio-offset)
+                   (>= audio-offset new-target-offset))
+          (audio/play sound))
+
+        "time"
+        (let [audio-distance (* velocity audio-offset)]
+          (when (and (> target-offset audio-distance)
+                     (>= audio-distance new-target-offset))
+            (audio/play sound)))
+
+        true))))
+
+(defn fall [dt speed cue]
   (let [prev-top (:top cue)
         new-top (+ prev-top (* (:velocity cue) dt))
         target-offset (int (- (@scenario :middle-of-zone) new-top))]
+    (audio-trigger speed cue target-offset)
     (assoc cue
            :prev-top prev-top
            :top new-top
-           :target_offset target-offset)))
+           :target-offset target-offset)))
 
 (defn color [{:keys [value scored] :as cue}]
   (if (= scored 0)
@@ -65,8 +86,8 @@
                :scored-cues (concat scored-cues missed))
         (score/update-score [] missed-cues))))
 
-(defn update-cues [{:keys [delta-time cues speed] :as state}]
-  (let [updated-cues (map (partial fall delta-time) cues)]
+(defn update-cues [{:keys [delta-time speed cues] :as state}]
+  (let [updated-cues (map (partial fall delta-time speed) cues)]
     (record-border-crossings state updated-cues)
     (assoc state :cues updated-cues)))
 
