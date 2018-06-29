@@ -29,7 +29,7 @@
    ;; space - sound is played with space-based offset of cue crossing middle of zone
    ;; cue - sound is played on keystroke, corresponding with correctness
    ;; key - sound is played on keystroke, regardless of correctness
-   :sound-mode "space"
+   :sound-mode "key"
    :lane-pitches [261.63 293.66 329.63 349.23]
 
    :speed {
