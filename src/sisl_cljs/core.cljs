@@ -129,14 +129,26 @@
     (log/record-event (log/pause-event 1))
     (start-animation :running)))
 
+(defn run-logging [participant]
+  (go
+    (let [{:keys [success code] :as log-result}
+          (<! (log/start-logging participant @settings/scenario))]
+      (swap! app-state #(assoc % :log-result log-result)))))
+
 (defn new-game []
   (go
-    (let [{:keys [success code] :as log-result} (<! (log/start-logging @settings/scenario))]
-      (swap! app-state #(assoc % :log-result log-result))
-      #_(when success
-        (js/mode_Finished code))))
-  (reset! app-state (fresh-state))
-  (start-animation :running))
+    (let [settings-channel (chan)
+          scenario-id (js/prompt "Trial ID")
+          participant (js/prompt "Participant ID")]
+      ;; Wait for the success events to come back on the settings channel
+      (settings/load-settings settings-channel scenario-id)
+      (<! settings-channel)
+      (<! settings-channel)
+
+      (reset! app-state (assoc (fresh-state)
+                               :participant participant))
+      (run-logging participant)
+      (start-animation :running))))
 
 (defn reset-game []
   (cancel-animation)
@@ -165,7 +177,7 @@
 (defonce initial-setup
   (let [settings-channel (chan)]
     (events/removeAll (dom/getWindow))
-    (settings/load-settings settings-channel)
+    (settings/load-settings settings-channel "default")
     (go
       (log/console (<! settings-channel))
       (log/console (<! settings-channel))
@@ -182,11 +194,3 @@
 
       (if-not (:debug @settings/scenario)
         (new-game)))))
-
-
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
-

@@ -6,7 +6,7 @@
    [sisl-cljs.board :as board]
    [sisl-cljs.log :as log]
    [sisl-cljs.dialog :as dialog]
-   [sisl-cljs.settings :refer [scenario fresh-trial]]))
+   [sisl-cljs.settings :refer [scenario fresh-trial load-settings]]))
 
 (defn set-font-size [elt size]
   (set! (.. elt -style -fontSize) (str size "px")))
@@ -70,7 +70,7 @@ connection and try again later."]])
               :on-click (controls :pause-game)}])
    [:input {:type "button"
             :value "Reload Settings"
-            :on-click #(sisl-cljs.settings/load-settings (chan))}]])
+            :on-click #(load-settings (chan) "default")}]])
 
 (def interesting-keys [:status :speed])
 

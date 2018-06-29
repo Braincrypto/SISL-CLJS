@@ -1,13 +1,16 @@
 {
     "debug": true,
-    "board-height": 400,
-    "board-width": 600,
+    "board-height": 600,
+    "board-width": 300,
     "lane-width": 60,
     "bottom-gap": 50,
     "cue-width-multiplier": 0.8,
     "cue-height-multiplier": 0.8,
     "target-height-multiplier": 1.2,
     "lane-keys": ["D", "F", "J", "K"],
+
+  "sound-mode": "cue",
+  "lane-pitches": [261.63, 293.66, 329.63, 349.23],
 
     "speed" : {
         "default": 1.0,

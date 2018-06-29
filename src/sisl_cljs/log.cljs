@@ -152,7 +152,7 @@
           response
           (recur (inc tries)))))))
 
-(defn- new-session [scenario]
+(defn- new-session [participant scenario]
   (let [url (new goog.Uri (.-URL js/document))]
     (try-request
      new-session-url
@@ -160,49 +160,49 @@
                {:browser_info (.-userAgent js/navigator)
                 :machine_info ""
                 :scenario (str scenario)
-                :turk_user_id (.getParameterValue url "workerId")
-                :turk_hit_id (.getParameterValue url "hitId")
-                :turk_assignment_id (.getParameterValue url "assignmentId")}}
+                :scenario-name (:scenario-name scenario)
+                :participant participant}}
       :reason "Could not start new session."})))
 
-(defn- send-to-server [session-id queue]
+(defn- send-to-server [participant session-id queue]
   (try-request
    log-upload-url
-   {:params {:session session-id
+   {:params {:participant participant
+             :session session-id
              :data queue}
     :reason "Could not upload log chunk."}))
 
-(defn- finish-session [session-id]
+(defn- finish-session [participant session-id]
   (try-request
    finish-session-url
    {:params {:session session-id}
     :reason "Could not finish log session."}))
 
-(defn- logging-loop [session-id channel]
+(defn- logging-loop [participant session-id channel]
   (go-loop [queue #queue []]
     (if-let [event (<! channel)]
       (let [bigger-queue (conj queue event)
             queue-size (count bigger-queue)]
         (if (>= queue-size when-to-send)
           (let [{:keys [success] :as server-response}
-                (<! (send-to-server session-id bigger-queue))]
+                (<! (send-to-server participant session-id bigger-queue))]
             (if success
               (recur #queue [])
               server-response))
           (recur bigger-queue)))
       (let [{:keys [success] :as server-response}
-            (<! (send-to-server session-id queue))]
+            (<! (send-to-server participant session-id queue))]
         (if success
-          (<! (finish-session session-id))
+          (<! (finish-session participant session-id))
           server-response)))))
 
-(defn start-logging [scenario]
+(defn start-logging [participant scenario]
   (reset! event-channel (chan))
   (go
     (let [{:keys [session-id] :as response}
-          (<! (new-session scenario))]
+          (<! (new-session participant scenario))]
       (if session-id
-        (<! (logging-loop session-id @event-channel))
+        (<! (logging-loop participant session-id @event-channel))
         response))))
 
 (defn stop-logging []

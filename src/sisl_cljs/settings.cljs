@@ -91,9 +91,12 @@
        (reset! fresh-trial))
   (put! chan "Trial loaded."))
 
-(defn load-trial [chan filename]
-  (GET filename {:handler (partial parse-trial chan)
-                 :error-handler #(log/console "Failed to parse trial file.")}))
+(defn load-trial [chan id]
+  (let [counter (swap! request-counter inc)
+        filename (str "trial/" id ".csv?foo=" counter)]
+    (GET filename
+         {:handler (partial parse-trial chan)
+          :error-handler #(log/console "Failed to parse trial file.")})))
 
 ;; Scenario parsing
 (defn calculate-parameters [scenario]
@@ -136,25 +139,27 @@
            :lane-gap lane-gap
            :lane-colors lane-colors)))
 
-(defn parse-scenario [chan response]
+(defn parse-scenario [chan id response]
   (->> response
-       (merge defaults)
+       (merge defaults
+              {:scenario-name id})
        calculate-parameters
        (reset! fresh-scenario)
        (reset! scenario))
   (put! chan "Scenario loaded."))
 
-(defn load-scenario [chan filename]
-  (GET filename {:handler (partial parse-scenario chan)
-                 :error-handler #(log/console "Failed to parse scenario file.")
-                 :response-format :json
-                 :keywords? true}))
-
-(defn load-settings [chan]
+(defn load-scenario [chan id]
   (let [counter (swap! request-counter inc)
-        param (str "?foo=" counter)]
-    (load-trial chan (str "trial.csv" param))
-    (load-scenario chan (str "scenario.json" param))))
+        filename (str "scenario/" id ".json?foo=" counter)]
+    (GET filename
+         {:handler (partial parse-scenario chan id)
+          :error-handler #(log/console "Failed to parse scenario file.")
+          :response-format :json
+          :keywords? true})))
+
+(defn load-settings [chan id]
+  (load-trial chan id)
+  (load-scenario chan id))
 
 (defn process-scenario-event
   [state {:keys [category value] :as event}]
