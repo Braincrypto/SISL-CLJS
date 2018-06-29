@@ -34,12 +34,12 @@
 
 (defn hit? [event
             {:keys [value scored] :as cue}]
-  (if scored
-    :already-scored
-    (if (and (= value (:lane event))
-             (cue/in-target? cue))
-      :hits
-      :misses)))
+  (if (and (= value (:lane event))
+           (cue/in-target? cue))
+    (if scored
+      :already-scored-hit
+      :hit)
+    :miss))
 
 (defn record-response
   [{:keys [current-event keys-down] :as state}]
@@ -77,27 +77,58 @@
 
 (defn hit-cues
   [{:keys [current-event status cues scored-cues] :as state}]
+
+  ;; Only check for hits if we're running and it was a keydown
   (if (and (= (:state current-event) :down)
            (= status :running))
-    (let [{:keys [hits misses already-scored]}
+
+    ;; Sort the cues into those hit by this key and those not hit.
+    (let [{:keys [hit miss already-scored-hit]}
           (group-by (partial hit? current-event) cues)
 
-          [first-missed & rest-missed] (sort-by :top > misses)
-          hit-cues (map #(assoc % :scored 1) hits)
+          ;; Mark all of the hit cues as correct
+          newly-hit (map #(assoc % :scored 1) hit)
 
-          missed? (and first-missed (empty? hit-cues))
+          ;; Find the lowest missed cue
+          [first-missed & rest-missed :as all-missed] (sort-by :top > miss)
 
-          missed-cues (if missed?
+          ;; Did we hit something?
+          hit? (not (empty? newly-hit))
+
+          ;; If there was at least one miss and zero hits, then
+          ;; we have a miss
+          missed? (and first-missed
+                       (not (:scored first-missed))
+                       (empty? newly-hit))
+
+          ;; Make a list of newly missed cues
+          newly-missed (if missed?
                         [(assoc first-missed :scored 0)]
-                        [])
-
-          other-cues (concat already-scored (when-not missed? [first-missed]) rest-missed)]
+                        [])]
       (-> state
-          (score/update-score hit-cues missed-cues)
-          (record-hits hit-cues first-missed)
+          ;; Update the score tracker
+          (score/update-score newly-hit
+                              (if hit?
+                                []
+                                [first-missed]))
+
+          ;; Handle logging
+          (record-hits newly-hit first-missed)
+
+          ;; If we're in an audio mode that needs a sound, play it
           audio-trigger
-          (assoc :cues (concat hit-cues missed-cues other-cues)
-                 :scored-cues (concat scored-cues hit-cues missed-cues))))
+
+          ;; Rebuild the state data structure
+          (assoc :cues (concat newly-hit
+                               newly-missed
+                               already-scored-hit
+                               (if missed?
+                                 rest-missed
+                                 all-missed))
+                 :scored-cues (concat
+                               scored-cues
+                               newly-hit
+                               newly-missed))))
     state))
 
 (defn process-key-event [state event]
