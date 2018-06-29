@@ -78,7 +78,7 @@
   [{:keys [cues scored-cues speed] :as state}]
   (let [{bottom-cues true remaining-cues false} (group-by hit-bottom? cues)
         missed-cues (remove :scored bottom-cues)
-        missed (map #(assoc % :missed true) missed-cues)]
+        missed (map #(assoc % :scored 0) missed-cues)]
     (doseq [cue missed]
       (log/record-cue :cue_disappear cue speed))
     (-> state

@@ -37,7 +37,7 @@
    {:keys [down-threshold up-threshold
            numerator denominator
            min-speed max-speed]}]
-  (let [hit-count (count (remove :missed score-window))]
+  (let [hit-count (count (remove #(= (:scored %) 0) score-window))]
     (cond
       (>= hit-count up-threshold)
       (record-speed (min (* current-speed (/ numerator denominator)) max-speed))
