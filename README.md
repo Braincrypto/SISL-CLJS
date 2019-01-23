@@ -9,71 +9,54 @@ A ClojureScript implementation of the SISL task for the web/MTurk.
 
 ## Setup
 
-To get an interactive development environment run:
-
-    lein figwheel
-
-and open your browser at [localhost:3449](http://localhost:3449/).
-This will auto compile and send all changes to the browser without the
-need to reload. After the compilation process is complete, you will
-get a Browser Connected REPL. An easy way to try it is:
-
-    (js/alert "Am I connected?")
-
-and you should see an alert in the browser window.
-
-To clean all compiled files:
+Install Java and Leiningen. Then navigate to this directory on the command line and run:
 
     lein clean
-
-To create a production build run:
-
     lein cljsbuild once min
+    lein ring server-headless
 
-And open your browser in `resources/public/index.html`. You will not
-get live reloading, nor a REPL. 
+Then you can open a browser and connect to http://localhost:3700/.
 
-## Server Side
+Trials and scenarios are stored under `resources/public/trial` and `resources/public/scenario` respectively. When the user enters their trial ID in the app, it will request `resources/public/trial/{trial-id}.csv` and `resources/public/scenario/{trial-id}.json`.
 
-The development environment comes with a minimal implementation of a server
-that accepts all data and discards it, only keeping track of what session IDs
-it has already given out. Data is submitted to the server in JSON form, to the
-following URLs:
+On the server side, it will generate a unique ID for the session, and logs are written to `logs/{participant}/{session-id}/`. At the end of the trial, the session-id will be displayed. It's a UUID, but writing down the first 5 or so digits should be sufficient to differentiate it from other files in the same directory.
 
-"new-session.php" requests a new session. It expects an object of the form:
+Logs consist of 5 files:
 
-    { "browser-info": <user agent string> }
+- event.csv contains a log of the trial events.
+- input.csv contains a log of the user's keyboard input during the trial.
+- finish.json contains a timestamp for the final completion of the trial.
+- scenario.json contains the scenario parameters as interpreted by the app
+  (so there will be a few additional derived values on top of the ones present
+  directly in the scenario file it was reading from)
+- system.json contains information about the browser used
 
-and returns
+## Log Files
 
-    { "success": true, "session-id": <integer> }
+Both log files share the following columns:
 
-Where "session-id" is an integer that will be used to tag future uploads as
-being part of the same logging session.
+- `date_time`: The time which the event happened.
+- `time_stamp_ms`: A millisecond-resolution time stamp, relative to when the browser loaded the experiment page.
+- `event_type`: What kind of event happened.
 
-- "upload-data.php" uploads part of a log. It expects an object of the form:
+### Event Log
 
-    { "session": <session-id>,
-      "data": [ <list of json objects representing events> ] }
+The event log has the following additional columns:
 
-and returns
-
-    { "success": true }
-
-Finally, "finish-session.php" closes out a session, after which no more data
-will be written. It expects an object of the form:
-
-    { "session": <session-id> }
-
-and returns
-
-    { "success": true,
-      "code": <finish-code> }
-
-Where <finish-code> is a unique code that the user can provide to prove that they finished a session as requested.
+- `trial_row_id`: The row in the trial file that the event relates to.
+- `event_value`: Depends on the event type.
+  - If the event is cue-related, then this is 1 if the cue was hit correctly, and 0 if it was not, as of the time of the event.
+  - If the event type is dialog_response, it is the response chosen for the dialog.
+  - If the event type is speed_change, it is the new speed
+  - If the event type is pause, it is 0 if the game was just paused, and 1 if the game was just resumed.
+- `cue\_pos\_x` is the lane in which the relevant cue was.
+- `cue\_pos\_y` is the y-value position of the top of the cue, relative to the top of the screen.
+- `cue_vy` is the current velocity of the cue in pixels per millisecond.
+- `cue_target_offset` is how far the cue would have to travel, in pixels, to be dead center in the target zone.
+- `cue_category` comes from the trial file.
 
 ## License
 
-Copyright © 2015 SRI International
+Copyright © 2015-2019 SRI International
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
