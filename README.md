@@ -49,8 +49,8 @@ The event log has the following additional columns:
   - If the event type is dialog_response, it is the response chosen for the dialog.
   - If the event type is speed_change, it is the new speed
   - If the event type is pause, it is 0 if the game was just paused, and 1 if the game was just resumed.
-- `cue\_pos\_x` is the lane in which the relevant cue was.
-- `cue\_pos\_y` is the y-value position of the top of the cue, relative to the top of the screen.
+- `cue_pos_x` is the lane in which the relevant cue was.
+- `cue_pos_y` is the y-value position of the top of the cue, relative to the top of the screen.
 - `cue_vy` is the current velocity of the cue in pixels per millisecond.
 - `cue_target_offset` is how far the cue would have to travel, in pixels, to be dead center in the target zone.
 - `cue_category` comes from the trial file.
