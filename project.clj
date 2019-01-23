@@ -5,10 +5,11 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.clojure/clojurescript "1.10.312"]
+                 [org.clojure/clojurescript "1.10.439"]
                  [org.clojure/core.async "0.4.474"]
                  [reagent "0.8.1"]
-                 [cljs-ajax "0.7.3"]
+                 [cheshire "5.8.1"]
+                 [cljs-ajax "0.7.4"]
                  [cljs-bach "0.3.0"]
                  [markdown-clj "1.0.2"]
                  [ring/ring-json "0.4.0"]]
