@@ -47,11 +47,11 @@
   state)
 
 (defn record-hits
-  [{:keys [speed current-event] :as state} hit-cues missed-cues]
+  [{:keys [speed current-event] :as state} hit-cues missed-cue]
   (if (empty? hit-cues)
     (do
-      (doseq [miss missed-cues]
-        (log/record-cue :key_incorrect miss speed))
+      (when missed-cue
+        (log/record-cue :key_incorrect missed-cue speed))
       state)
     (do
       (doseq [hit hit-cues]
@@ -101,19 +101,22 @@
                        (not (:scored first-missed))
                        (empty? newly-hit))
 
+          first-miss (when first-missed
+                       (assoc first-missed :scored 0))
+
           ;; Make a list of newly missed cues
           newly-missed (if missed?
-                        [(assoc first-missed :scored 0)]
+                        [first-miss]
                         [])]
       (-> state
           ;; Update the score tracker
           (score/update-score newly-hit
                               (if hit?
                                 []
-                                [first-missed]))
+                                [first-miss]))
 
           ;; Handle logging
-          (record-hits newly-hit newly-missed)
+          (record-hits newly-hit first-miss)
 
           ;; If we're in an audio mode that needs a sound, play it
           audio-trigger
