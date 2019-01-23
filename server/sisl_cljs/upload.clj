@@ -33,7 +33,7 @@
         participant (validate-subject participant)
         session-dir (make-session-dir participant session-id)]
     (cheshire/generate-stream
-     (read-string scenario)
+     scenario
      (io/writer (str session-dir "/scenario.json")))
 
     (cheshire/generate-stream

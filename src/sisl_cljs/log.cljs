@@ -158,7 +158,7 @@
      new-session-url
      {:params {:session
                {:browser_info (.-userAgent js/navigator)
-                :scenario (str scenario)
+                :scenario (dissoc scenario :lane-sounds)
                 :scenario-name (:scenario-name scenario)
                 :participant participant}}
       :reason "Could not start new session."})))
