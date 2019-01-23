@@ -158,7 +158,6 @@
      new-session-url
      {:params {:session
                {:browser_info (.-userAgent js/navigator)
-                :machine_info ""
                 :scenario (str scenario)
                 :scenario-name (:scenario-name scenario)
                 :participant participant}}
