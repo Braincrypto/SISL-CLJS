@@ -74,12 +74,17 @@
     (if (crossed-border? cue (@scenario border))
         (log/record-cue event-name cue (:speed state)))))
 
+(defn score-bottom-cue [cue]
+  (if (:scored cue)
+    cue
+    (assoc cue :scored 0)))
+
 (defn remove-scored-cues
   [{:keys [cues scored-cues speed] :as state}]
   (let [{bottom-cues true remaining-cues false} (group-by hit-bottom? cues)
         missed-cues (remove :scored bottom-cues)
         missed (map #(assoc % :scored 0) missed-cues)]
-    (doseq [cue missed]
+    (doseq [cue (map score-bottom-cue bottom-cues)]
       (log/record-cue :cue_disappear cue speed))
     (-> state
         (assoc :cues remaining-cues
