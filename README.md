@@ -21,6 +21,35 @@ Trials and scenarios are stored under `resources/public/trial` and `resources/pu
 
 On the server side, it will generate a unique ID for the session, and logs are written to `logs/{participant}/{session-id}/`. At the end of the trial, the session-id will be displayed. It's a UUID, but writing down the first 5 or so digits should be sufficient to differentiate it from other files in the same directory.
 
+## Trial Files
+
+Trial files are CSV with the following columns:
+
+- `cue_row_id` gets passed through to the log files, and otherwise has no effect.
+- `type` contains the event type, and `value` contains its arguments. there are currently:
+  - `cue` - spawns a new cue on the field, `value` indicates which lane
+  - `dialog` - pauses the game and displays a dialog box, `value` indicates which dialog (pulled from a list in the scenario file)
+  - `speed` - changes how speed adjustment is handled
+	- -1 resets the speed to default (as defined in scenario)
+	- 0 disables automatic speed adjustment
+	- 1 enables automatic speed adjustment
+	- 2 manually sets the speed multiplier based on the `time_to_targ_ms` field divided by 1000
+
+  - `score` - adjusts scoring
+	- -1 resets the score tracker
+	- 0 disables scoring
+	- 1 enables scoring
+
+  - `scenario` - sets a scenario parameter. `value` is the new value to use, `category` column contains the key-path in the JSON file, with path components separated by dots. For example, if you wanted to change the default speed to 2x, you would add a row with `type` as "scenario", `value` as 2.0, and `category` as "speed.default".
+
+- `appear_time_ms` - the time (in ms) between the previous event firing and this one firing
+- `time_to_targ_ms` - the time (in ms) between a cue appearing and reaching the target zone, at the default speed setting
+- `category` - passed through to the log file
+
+- `audio_offset` - the offset between an event happening and the related audio cue. If audio is in `time` mode, this offset is how many milliseconds *before* the cue crosses the center of the target zone (a negative value would play the sound after the cue has already crossed the target). If audio is in `space` mode, it's measured in pixels instead. In `key` mode, it does nothing.
+
+## Log Files
+
 Logs consist of 5 files:
 
 - event.csv contains a log of the trial events.
@@ -31,9 +60,7 @@ Logs consist of 5 files:
   directly in the scenario file it was reading from)
 - system.json contains information about the browser used
 
-## Log Files
-
-Both log files share the following columns:
+Both csv log files share the following columns:
 
 - `date_time`: The time which the event happened.
 - `time_stamp_ms`: A millisecond-resolution time stamp, relative to when the browser loaded the experiment page.
