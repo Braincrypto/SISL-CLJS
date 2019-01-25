@@ -14,25 +14,63 @@
 
 (def defaults
   {
+   ;; If running in debug, there will be a row of buttons displayed below the
+   ;; play field, used for pausing or resetting the trial.
    :debug true
+
+   ;; How tall the playing field is, in pixels.
    :board-height 600
+
+   ;; How wide the playing field is, in pixels.
    :board-width 300
+
+   ;; How wide each lane is, in pixels.
    :lane-width 60
+
+   ;; The gap between the bottom of the playing field and the target zone, in pixels.
    :bottom-gap 50
+
+   ;; How wide a cue is, expressed as a multiple of the width of a lane.
    :cue-width-multiplier 0.8
+   ;; How tall a cue is, expressed as a multiple of the width of a lane.
    :cue-height-multiplier 0.8
+
+   ;; How tall the target zone is, expressed as a multiple of the width of a lane.
    :target-height-multiplier 1.2
+
+   ;; Which keys are used to respond for each lane. If you want to add more lanes,
+   ;; just add more lane keys.
    :lane-keys ["D" "F" "J" "K"]
 
    ;; Possible sound modes:
-   ;; time - sound is played with time-based offset of cue crossing middle of zone
-   ;; space - sound is played with space-based offset of cue crossing middle of zone
-   ;; cue - sound is played on keystroke, corresponding with correctness
-   ;; key - sound is played on keystroke, regardless of correctness
+   ;; time - Sound is played with time-based offset of cue crossing middle of zone
+   ;; space - Sound is played with space-based offset of cue crossing middle of zone
+   ;; cue - Sound is played on keystroke, corresponding with correctness.
+   ;;       If an incorrect input is made, an error tone will play.
+   ;; key - Sound is played on keystroke, regardless of correctness
    :sound-mode ""
+
+   ;; The pitches of the sounds made by each lane, in Hz
    :lane-pitches [261.63 293.66 329.63 349.23]
 
+   ;; Parameters governing the automatic adjustment of speed.
+   ;; Every time a cue is scored as either a hit or a miss,
+   ;; it is added into a "lookback" list. When that list is equal
+   ;; to the "lookback" parameter in size, speed is adjusted
+   ;; by the following algorithm (implemented in calculate-speed in
+   ;; score.cljs) and the lookback list is cleared out.
+   ;;
+   ;; 1. Calculate the number of correct responses in the lookback window.
+   ;; 2. If that number is greater than or equal to up-threshold, increase speed.
+   ;; 3. If it is lesser than or equal to down-threshold, decrease speed.
+   ;; 4. Otherwise, speed remains the same.
+   ;;
+   ;; When speed is increased, the current speed is multiplied by
+   ;; (numerator / denominator). When speed is decreased, it is multiplied
+   ;; by (denominator / numerator). It is capped on either end by max-speed
+   ;; and min-speed.
    :speed {
+           ;; The default speed multiplier.
            :default 1.0
            :lookback 12
            :down-threshold 6
@@ -40,14 +78,20 @@
            :numerator 21.0
            :denominator 20.0
            :max-speed 500.0
-           :min-speed 0.5
-           }
-   :colors [{:hue 0   :saturation 1.0 :value 1.0 } ;red
-            {:hue 120 :saturation 1.0 :value 1.0 } ;green
-            {:hue 240 :saturation 1.0 :value 1.0 } ;blue
-            {:hue 60  :saturation 1.0 :value 1.0 } ;yellow
-            {:hue 180 :saturation 1.0 :value 1.0 } ;cyan
-            {:hue 300 :saturation 1.0 :value 1.0 }] ;magenta
+           :min-speed 0.5}
+
+   ;; The colors of each lane, specified in the HSV color space.
+   ;; If there are more lanes than colors, excess colors are unused.
+   :colors [{:hue 0   :saturation 1.0 :value 1.0} ;red
+            {:hue 120 :saturation 1.0 :value 1.0} ;green
+            {:hue 240 :saturation 1.0 :value 1.0} ;blue
+            {:hue 60  :saturation 1.0 :value 1.0} ;yellow
+            {:hue 180 :saturation 1.0 :value 1.0} ;cyan
+            {:hue 300 :saturation 1.0 :value 1.0}] ;magenta
+
+   ;; An experimental (and possibly buggy?) feature to test what happens
+   ;; when the player is given feedback that does not correspond to actual
+   ;; input.
    :random-feedback {
                      ;; The probability that a given feedback will be altered.
                      :probability 0.0
@@ -56,8 +100,8 @@
                      ;; to the 'bias' value. If false, random feedback will be 'hit'
                      ;; with a probability equal to the bias value and 'miss' otherwise.
                      :flip false
-                     :bias 0.5}
-   })
+                     :bias 0.5}})
+
 
 (defn to-hsl [color]
   (let [{h :hue sat :saturation val :value} color

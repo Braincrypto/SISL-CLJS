@@ -21,6 +21,10 @@ Trials and scenarios are stored under `resources/public/trial` and `resources/pu
 
 On the server side, it will generate a unique ID for the session, and logs are written to `logs/{participant}/{session-id}/`. At the end of the trial, the session-id will be displayed. It's a UUID, but writing down the first 5 or so digits should be sufficient to differentiate it from other files in the same directory.
 
+## Scenario Files
+
+Scenario files are JSON. What each field does is described in `src/sisl_cljs/settings.cljs` in the comments on the `defaults` variable (this is also where the default values are stored). The notation there isn't exactly JSON (it's EDN, Clojure's native format), but there is a 1:1 correspondence. An example JSON version is available in `resources/public/scenario.json`.
+
 ## Trial Files
 
 Trial files are CSV with the following columns:
@@ -46,7 +50,7 @@ Trial files are CSV with the following columns:
 - `time_to_targ_ms` - the time (in ms) between a cue appearing and reaching the target zone, at the default speed setting
 - `category` - passed through to the log file
 
-- `audio_offset` - the offset between an event happening and the related audio cue. If audio is in `time` mode, this offset is how many milliseconds *before* the cue crosses the center of the target zone (a negative value would play the sound after the cue has already crossed the target). If audio is in `space` mode, it's measured in pixels instead. In `key` mode, it does nothing.
+- `audio_offset` - the offset between an event happening and the related audio cue. If audio is in `time` mode, this offset is how many milliseconds *before* the cue crosses the center of the target zone (a negative value would play the sound after the cue has already crossed the target). If audio is in `space` mode, it's measured in pixels instead. In `key` and `cue` modes, it does nothing.
 
 ## Log Files
 
